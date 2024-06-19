@@ -13,7 +13,7 @@ Source: http://savannah.nongnu.org/download/gdsl/%{version}/%{name}-%{version}.t
 Group: Development/Libraries
 %define mybuildroot /var/tmp/%{name}-build
 BuildRoot: %{mybuildroot}
-%define _prefix     /home/cilu/trunk/skynet/3rd/gdsl
+%define _prefix     /download/snake_server/skynet/3rd/gdsl
 %define _mandir     %{_prefix}/man
 
 %description

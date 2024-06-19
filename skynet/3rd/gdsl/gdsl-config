@@ -1,6 +1,6 @@
 #! /bin/sh
 
-prefix=/home/cilu/trunk/skynet/3rd/gdsl
+prefix=/download/snake_server/skynet/3rd/gdsl
 exec_prefix=${prefix}
 includedir=${prefix}/include
 
