@@ -1,4 +1,4 @@
-.PHONY: all clean build jemalloc gdsl
+.PHONY: all clean build jemalloc
 
 include platform.mk
 
@@ -8,7 +8,7 @@ CSERVICE_PATH ?= $(BUILD_PATH)/cservice
 INCLUDE_PATH ?= $(BUILD_PATH)/include
 CLIB_PATH ?= $(BUILD_PATH)/clib
 
-CFLAGS = -g3 -O2 -Wall -I$(LUA_INC) -Iskynet-src -I$(GDSL_INC) $(MYCFLAGS)
+CFLAGS = -g3 -O2 -Wall -I$(LUA_INC) -Iskynet-src $(MYCFLAGS)
 
 all : build
 
@@ -39,17 +39,6 @@ $(JEMALLOC_STATICLIB) : | 3rd/jemalloc/autogen.sh
 
 jemalloc : $(MALLOC_STATICLIB)
 
-# gdsl
-GDSL_STATICLIB := 3rd/gdsl/lib/libgdsl.a
-GDSL_INC := 3rd/gdsl/include
-
-all : gdsl
-
-$(GDSL_STATICLIB) : | 3rd/gdsl/configure
-	cd 3rd/gdsl && ./configure --prefix=$(PWD)/3rd/gdsl
-	cd 3rd/gdsl && $(MAKE) CC=$(CC) && $(MAKE) install
-
-gdsl : $(GDSL_STATICLIB)
 
 # skynet
 CSERVICE = snlua logger gate harbor
@@ -68,7 +57,7 @@ all : \
   $(foreach v, $(CSERVICE), $(CSERVICE_PATH)/$(v).so) \
   $(foreach v, $(LUA_CLIB), $(LUA_CLIB_PATH)/$(v).so)
 
-$(BUILD_PATH)/skynet : $(foreach v, $(SKYNET_SRC), skynet-src/$(v)) $(LUA_STATICLIB) $(MALLOC_STATICLIB) $(GDSL_STATICLIB)
+$(BUILD_PATH)/skynet : $(foreach v, $(SKYNET_SRC), skynet-src/$(v)) $(LUA_STATICLIB) $(MALLOC_STATICLIB)
 	$(CC) $(CFLAGS) -o $@ -Wl,--whole-archive $^ -Wl,--no-whole-archive -I$(JEMALLOC_INC) $(LDFLAGS) $(EXPORT) $(SKYNET_LIBS) $(SKYNET_DEFINES)
 
 
@@ -154,9 +143,4 @@ cleanall: clean
 ifneq (,$(wildcard 3rd/jemalloc/Makefile))
 	cd 3rd/jemalloc && $(MAKE) clean
 	rm -rf 3rd/jemalloc/lib
-endif
-ifneq (,$(wildcard 3rd/gdsl/Makefile))
-	rm -rf 3rd/gdsl/include
-	rm -rf 3rd/gdsl/lib
-	cd 3rd/gdsl && $(MAKE) clean
 endif

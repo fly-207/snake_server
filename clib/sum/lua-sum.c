@@ -5,8 +5,8 @@
 
 #include <lua.h>
 #include <lauxlib.h>
-#include <gdsl/gdsl_types.h>
-#include <gdsl/gdsl_list.h>
+#include "gdsl_types.h"
+#include "gdsl_hash.h"
 
 #include "skynet_malloc.h"
 #include "sum.h"

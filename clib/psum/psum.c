@@ -4,8 +4,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <stdlib.h>
-#include <gdsl/gdsl_types.h>
-#include <gdsl/gdsl_hash.h>
+#include "gdsl_types.h"
 
 #include "skynet_malloc.h"
 #include "psum.h"

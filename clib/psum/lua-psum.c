@@ -6,11 +6,12 @@
 
 #include <lua.h>
 #include <lauxlib.h>
-#include <gdsl/gdsl_types.h>
-#include <gdsl/gdsl_list.h>
+
+#include "gdsl_types.h"
+
 
 #include "skynet_malloc.h"
-#include "psum.h"
+#include "psum.h" 
 
 #define check_psum(L, idx)\
     *(struct psum_space**)luaL_checkudata(L, idx, "psum_meta")

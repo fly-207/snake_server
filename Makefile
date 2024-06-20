@@ -48,9 +48,6 @@ build-skynet:
 	install -p -m 0755 skynet/3rd/lua/lua $(BUILD_DIR)/lua
 	install -p -m 0755 skynet/3rd/lua/luac $(BUILD_DIR)/luac
 	install -p -m 0644 skynet/3rd/lua/*.h $(INCLUDE_DIR)
-	install -d $(INCLUDE_DIR)/gdsl
-	install -p -m 0644 skynet/3rd/gdsl/include/*.h $(INCLUDE_DIR)
-	install -p -m 0644 skynet/3rd/gdsl/include/gdsl/*.h $(INCLUDE_DIR)/gdsl
 
 define CLEAN_SKYNET
 	cd skynet && $(MAKE) cleanall
