@@ -124,7 +124,7 @@ $(BUILD_CLUALIB_DIR)/gaoi.so : clib/gaoi/gaoi.c clib/gaoi/lua-gaoi.c
 	install -p -m 0644 clib/gaoi/gaoi.h $(INCLUDE_DIR)
 	gcc $(CFLAGS) $(SHARED) $^ -o $@ $(LDFLAGS)
 
-$(BUILD_CLUALIB_DIR)/lsum.so : clib/sum/sum.c clib/sum/lua-sum.c
+$(BUILD_CLUALIB_DIR)/lsum.so : clib/sum/sum.c clib/sum/lua-sum.c clib/sum/_gdsl_node.c clib/sum/gdsl_hash.c clib/sum/gdsl_list.c clib/sum/_gdsl_list.c
 	install -p -m 0644 clib/sum/sum.h $(INCLUDE_DIR)
 	gcc $(CFLAGS) $(SHARED) $^ -o $@ $(LDFLAGS)
 
