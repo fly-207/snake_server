@@ -13,6 +13,41 @@
 #include <sys/time.h>
 #endif
 
+
+/*
+我来总结一下这个 lua-measure.c 文件的主要功能：
+这是一个用于 Lua 代码性能测量的 C 模块，主要提供以下功能：
+时间测量功能
+	提供毫秒级(timestamp())和微秒级(timestamp_us())的时间戳获取
+	支持跨平台(Windows/Unix/MacOS)的时间测量
+函数调用追踪
+	通过 Lua hook 机制追踪函数调用
+	记录函数进入(on_enter_func)和离开(on_leave_func)的时间点
+	统计每个函数的调用次数和总执行时间
+协程支持
+	提供对 Lua 协程的测量支持
+	包含 yield 和 resume 操作的性能测量
+	可以判断是否是主线程(is_mainthread)
+性能分析功能
+	可以开启(lopen)和关闭(lclose)性能测量
+	提供性能数据的打印功能(lprint)
+	支持按时间消耗排序的性能报告
+性能监控
+	可以设置性能警告阈值(WASTE_MS_LIMIT = 200ms)
+	记录超过阈值的函数调用
+	维护一个性能消耗列表(MEASURE_WASTE_LIST)
+调试功能
+	提供 start 和 stop 函数用于调试时间段的测量
+	可以获取调试时间间隔
+	这个模块主要用于：
+性能分析和优化
+	函数调用追踪
+	耗时操作检测
+	协程性能监控
+	生成性能报告
+它通过 Lua 的 hook 机制和注册表来存储性能数据，可以帮助开发者找出代码中的性能瓶颈和耗时操作。
+
+*/
 //upvalues
 #define YIELD_RESUME 1
 
