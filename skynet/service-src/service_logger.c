@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <time.h>
+#include <sys/time.h>  // gettimeofday
 
 struct logger {
 	FILE * handle;
@@ -43,13 +44,26 @@ logger_cb(struct skynet_context * context, void *ud, int type, int session, uint
 		break;
 	case PTYPE_TEXT:
 		{
-			char stime[256] = {0};
-			uint32_t starttime = skynet_starttime();
-			uint64_t currenttime = skynet_now();
-			time_t ti = starttime + currenttime/100;
-			strftime(stime, sizeof(stime), "%m-%d_%H-%M-%S", localtime(&ti));
+			// char stime[256] = {0};
+			// uint32_t starttime = skynet_starttime();
+			// uint64_t currenttime = skynet_now();
+			// time_t ti = starttime + currenttime/100;
+			// strftime(stime, sizeof(stime), "%m-%d_%H-%M-%S", localtime(&ti));
 
-			fprintf(inst->handle, "[:%s][:%08x] ", stime, source);
+			struct timeval tv;
+			struct tm *tm_info;
+			char buff[100];  // 存储格式化后的时间字符串
+
+			gettimeofday(&tv, NULL);  // 获取当前时间（秒 + 微秒）
+			tm_info = localtime(&tv.tv_sec);  // 转换为本地时间
+
+			// 格式化日期和时间（不包括毫秒）
+			strftime(buff, sizeof(buff), "%Y-%m-%d %H:%M:%S", tm_info);
+
+			// 在已有字符串后追加毫秒信息
+			snprintf(buff + strlen(buff), sizeof(buff) - strlen(buff), ".%03ld", tv.tv_usec / 1000);
+
+			fprintf(inst->handle, "[%s] [:%08x] ", buff, source);
 			fwrite(msg, sz , 1, inst->handle);
 			fprintf(inst->handle, "\n");
 			fflush(inst->handle);
