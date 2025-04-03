@@ -30,16 +30,27 @@ function CBigPacketMgr:ClrBigPacketCache(iType)
     self.m_mBigPacketCache[iType] = nil
 end
 
+---@param iClientType: 协议类型
+---@param sData: 协议数据
+---@param iTotal: 总共包个数
+---@param iIndex: 当前第几个
+---@param fd:
 function CBigPacketMgr:HandleBigPacket(iClientType, sData, iTotal, iIndex, fd)
+
+    -- 首个消息体
     if iIndex == 1 then
         self:ClrBigPacketCache(iClientType)
     end
+
     self:AddBigPacketCache(iClientType, sData)
     local l = self:GetBigPacketCache(iClientType)
+
+    -- 追加第 iIndex 后总数量检验
     if #l ~= iIndex then
         self:ClrBigPacketCache(iClientType)
         assert(false, "HandleBigPacket index error")
     else
+        -- 所有消息都已经追加完成
         if iIndex == iTotal then
             self:ClrBigPacketCache(iClientType)
 
