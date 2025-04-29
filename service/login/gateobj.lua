@@ -316,9 +316,12 @@ function CConnection:_LoginAccount1(errcode)
         return
     end
 
+    local isLogin =oGateMgr:ValidPlayerLogin(sAccount, iChannel, self.m_sIP)
+
+    print("oGateMgr:IsOpen()"..(oGateMgr:IsOpen() and "1" or "0").."isLogin:"..(isLogin and "1" or "0"))
     if not oGateMgr:IsPreCreateRole() and not oGateMgr:IsOpen() and not oGateMgr:ValidPlayerLogin(sAccount, iChannel, self.m_sIP) then
         self:Send("GS2CLoginError", {pid = 0, errcode = gamedefines.ERRCODE.in_maintain, cmd="服务器即将开放敬请期待"})
-        return
+         return
     end
 
     local iHandle = self:GetNetHandle()
@@ -1107,7 +1110,7 @@ inherit(CGateMgr, logic_base_cls())
 
 function CGateMgr:New()
     local o = super(CGateMgr).New(self)
-    o.m_iOpenStatus = 0     -- 0:维护状态 1:白名单可登陆 2:所有玩家可登陆
+    o.m_iOpenStatus = 3    -- 0:维护状态 1:白名单可登陆 2:所有玩家可登陆
     o.m_mGates = {}
     o.m_mNoteConnections = {}
 

@@ -1338,7 +1338,7 @@ function CWorldMgr:OnServerStartEnd()
 
     global.oMergerMgr:OnServerStartEnd()
     
-    interactive.Send(".login", "login", "SetGateOpenStatus", {status = 1})
+    interactive.Send(".login", "login", "SetGateOpenStatus", {status = 3})
     global.oHuodongMgr:OnServerStartEnd()
 
     router.Send("bs", ".backend", "common", "RegisterGS2BS", {serverkey=get_server_key()})
