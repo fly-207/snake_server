@@ -24,10 +24,11 @@ if [ -f ./log/cs.log ]; then
     mv ./log/cs.log ./log/$LOG_BAK_ROUT/cs_`date +%Y%m%d-%H%M%S`.log
 fi
 
-echo 'checking local'
-./shell/check_lua.sh
+echo 'checking cs local'
+# bash ./shell/check_lua.sh
 
 python ./shell/gen_show_id.py
 
-echo 'starting server'
+echo 'starting cs server'
 nohup ./build/skynet ./config/cs_config.lua $FLAG > log/cs.out 2>&1 &
+# nohup ./build/skynet ./config/cs_config.lua undefine_cs > log/cs.out 2>&1 &

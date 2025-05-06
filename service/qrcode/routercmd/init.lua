@@ -10,6 +10,8 @@ Cmds.common = import(service_path("routercmd.common"))
 
 function Invoke(sModule, sCmd, mRecord, mData)
     local m = Cmds[sModule]
+    -- print(string.format("网络消息 服务=%s sModule=%s sCmd=%s mRecord=%s mData=%s",SERVICE_NAME, sModule, sCmd, mRecord, mData))
+
     if m then
         local f = m[sCmd]
         if f then

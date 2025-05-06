@@ -163,14 +163,14 @@ function M.DispatchC(routercmd)
         for k, v in pairs(mDebug) do
             local iDiff = iTime - v.time
             if iDiff >= 10 then
-                print(string.format("warning: router check delay(%s sec) session:%d time:%d sk:%s addr:%s module:%s cmd:%s",
-                    iDiff, k, v.time, v.sk, v.addr, v.module, v.cmd)
-                )
+                -- print(string.format("warning: router check delay(%s sec) session:%d time:%d sk:%s addr:%s module:%s cmd:%s",
+                --     iDiff, k, v.time, v.sk, v.addr, v.module, v.cmd)
+                -- )
             end
             if iDiff >= 300 then
-                print(string.format("warning: router delete delay(%s sec) session:%d time:%d sk:%s addr:%s module:%s cmd:%s",
-                    iDiff, k, v.time, v.sk, v.addr, v.module, v.cmd)
-                )
+                -- print(string.format("warning: router delete delay(%s sec) session:%d time:%d sk:%s addr:%s module:%s cmd:%s",
+                --     iDiff, k, v.time, v.sk, v.addr, v.module, v.cmd)
+                -- )
                 table.insert(lDel, k)
             end
         end

@@ -25,9 +25,10 @@ if [ -f ./log/gs.log ]; then
 fi
 
 # rm -Rf ./log/gs.log
-echo 'checking local'
+echo 'checking gs local'
 ./shell/check_lua.sh
 
-echo 'starting server'
+echo 'starting gs server'
 nohup ./build/skynet ./config/gs_config.lua $FLAG > log/gs.out 2>&1 &
+# nohup ./build/skynet ./config/gs_config.lua undefine_gs > log/gs.out 2>&1 &
 

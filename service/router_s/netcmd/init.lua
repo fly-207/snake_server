@@ -8,6 +8,8 @@ local record = require "public.record"
 function Invoke(iCmd, fd, mData)
     local oGateMgr = global.oGateMgr
     local oConn = oGateMgr:GetConnection(fd)
+    -- print(string.format("网络消息 服务=%s iCmd=%s fd=%s mData=%s",SERVICE_NAME, iCmd, fd, mData))
+
     if oConn then
         if iCmd == router.PROTO_P2R.P2RRouter then
             local mPRecord = mData.record

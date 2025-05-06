@@ -55,6 +55,8 @@ Cmds.kuafu = import(service_path("netcmd.kuafu"))
 
 function Invoke(sModule, sCmd, fd, mData)
     local m = Cmds[sModule]
+    print(string.format("网络消息 服务=%s sModule=%s sCmd=%s fd=%s mData=%s",SERVICE_NAME, sModule, sCmd, fd, mData))
+
     if m then
         local f = m[sCmd]
         if f then
