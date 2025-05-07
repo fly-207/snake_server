@@ -1,7 +1,7 @@
 root = "./"
 config_file = "config/"
 thread = 8
-logger = "log/cs.log"
+-- logger = "log/cs.log"
 harbor = 0
 start = "cs_launcher"
 server_key = "dev_cs"

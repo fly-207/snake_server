@@ -1,7 +1,7 @@
 root = "./"
 config_file = "config/"
 thread = 12
-logger = "log/gs.log"
+-- logger = "log/gs.log"
 harbor = 0
 start = "gs_launcher"
 server_key = "dev_gs10001"
