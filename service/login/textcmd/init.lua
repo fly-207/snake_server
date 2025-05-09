@@ -13,6 +13,11 @@ function Cmds.open(source, handle, parm)
     local ip,port = string.match(addr,"([^:]+):([^:]+)")
     local oGateMgr = global.oGateMgr
     local oGate = oGateMgr:GetGate(source)
+
+    print("新连接到达 source=", source)
+    print("新连接到达 handle=", handle)
+    print("新连接到达 parm=", parm)
+
     if oGate then
         if oGate:GetConnection(handle) then
             return
