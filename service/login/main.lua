@@ -29,6 +29,7 @@ skynet.start(function()
     local  sPorts = serverdefines.get_gateway_ports()
     local lPorts = split_string(sPorts, ",", tonumber)
     for _, v in ipairs(lPorts) do
+        skynet.error("登录端口", v)
         local oGate = gateobj.NewGate(v)
         global.oGateMgr:AddGate(oGate)
     end

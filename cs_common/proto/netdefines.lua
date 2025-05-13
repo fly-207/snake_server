@@ -1676,7 +1676,15 @@ for k, v in pairs(C2GS_DEFINES) do
     for k2, v2 in pairs(v) do
         assert(not C2GS[v2], string.format("netdefines C2GS error %s %s %s", k, k2, v2))
         assert(not C2GS_BY_NAME[k2], string.format("netdefines C2GS_BY_NAME error %s %s %s", k, k2, v2))
+
+        -- v2 = 1001
+        -- k2 = "C2GSLoginAccount"
+        -- k = "login"
+
+        -- C2GS[1001] = {"login", "C2GSLoginAccount"}
         C2GS[v2] = {k, k2}
+
+        -- C2GS_BY_NAME["C2GSLoginAccount"] = 1001
         C2GS_BY_NAME[k2] = v2
     end
 end

@@ -197,6 +197,14 @@ _forward(struct gate *g, struct connection * c, int size) {
 
 		memcpy(temp, s, 4);
 		databuffer_read(&c->buffer,&g->mp,temp+4, size);
+
+		printf("\n");
+		for (int i = 0; i< size; i++)
+		{
+			printf("%02X ", *((unsigned char*)temp + i + 4));
+		}
+		printf("\n");
+
 		if (g->xor_open){
 			xor_code((unsigned char *)(temp+4),size);
                        	}
@@ -220,16 +228,19 @@ dispatch_message(struct gate *g, struct connection *c, int id, void * data, int 
     }
     printf("\n======================\n");
   */
+	 struct skynet_context * ctx = g->ctx;
 
   /* rc4_crypt(&(c->state), data, data, sz); */
 	databuffer_push(&c->buffer,&g->mp, data, sz);
 	for (;;) {
 		int size = databuffer_readheader(&c->buffer, &g->mp, g->header_size);
+
+		skynet_error(ctx, "客户端消息 头部长度值=%d", size);
+
 		if (size < 0) {
 			return;
 		} else if (size > 0) {
 			if (size >= 0x1000000) {
-				struct skynet_context * ctx = g->ctx;
 				databuffer_clear(&c->buffer,&g->mp);
 				skynet_socket_close(ctx, id);
 				skynet_error(ctx, "Recv socket message > 16M");

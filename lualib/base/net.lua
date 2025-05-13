@@ -52,18 +52,38 @@ function M.Dispatch(netcmd)
         id = extype.ZINC_CLIENT,
         unpack = function (...) return ... end,
         dispatch = function (session, source, msg, sz)
+
+            print("收到 gate zinc_client 消息", msg, sz)
+
             if netcmd then
                 local sData = netpack.tostring2(msg, sz)
                 assert(#sData >= 6, "zinc_client unpack error")
+
+                print("================ 原始内容 ===================")
+                local t = {}
+                for i = 1, #sData do
+                    local byte = string.byte(sData, i)
+                    t[#t+1] = string.format("%02X ", byte)
+                end
+                print(table.concat(t, " "))
+
                 local fd = sData:byte(1)*(2^24) + sData:byte(2)*(2^16) + sData:byte(3)*(2^8) + sData:byte(4)
+
+                -- 消息号, 例如 C2GSLoginAccount 对应的 iType 是 1001
                 local iType = sData:byte(5)*(2^8) + sData:byte(6)
+
+                print("收到 gate zinc_client 消息 fd=%s iType=%s", fd, iType)
+
+                -- m 包含两个值 ( [模块名login], iType对应的协议串C2GSLoginAccount), 协议串==处理函数名==pb结构体名
                 local m = netproto.NetfindFunc("FindC2GSByType", iType)
                 assert(m, string.format("zinc_client find proto err type: %d, fd: %d", iType, fd))
                 local mData, sMsg = netproto.ProtobufFunc("decode", m[2], string.sub(sData, 7))
                 assert(mData, string.format("zinc_client decode proto err module: %s, cmd: %s, msg: %s, fd: %d", m[1], m[2], sMsg, fd))
 
+                local net_module = m[1]
+                local msg_name = m[2]
                 safe_call(function ()
-                    rt_monitor.mo_call({"net", m[1], m[2]}, netcmd.Invoke, m[1], m[2], fd, mData)
+                    rt_monitor.mo_call({"net", net_module, msg_name}, netcmd.Invoke, net_module, msg_name, fd, mData)
                 end)
             end
         end,
