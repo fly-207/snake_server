@@ -72,13 +72,16 @@ function M.Dispatch(netcmd)
                 -- 消息号, 例如 C2GSLoginAccount 对应的 iType 是 1001
                 local iType = sData:byte(5)*(2^8) + sData:byte(6)
 
-                print("收到 gate zinc_client 消息 fd=%s iType=%s", fd, iType)
+                print(string.format("gate zinc_client 消息 fd=%s iType=%s", fd, iType))
 
                 -- m 包含两个值 ( [模块名login], iType对应的协议串C2GSLoginAccount), 协议串==处理函数名==pb结构体名
                 local m = netproto.NetfindFunc("FindC2GSByType", iType)
-                assert(m, string.format("zinc_client find proto err type: %d, fd: %d", iType, fd))
+                local s1 = string.format("zinc_client find proto type: %d, fd: %d", iType, fd)
+                assert(m, s1)
                 local mData, sMsg = netproto.ProtobufFunc("decode", m[2], string.sub(sData, 7))
-                assert(mData, string.format("zinc_client decode proto err module: %s, cmd: %s, msg: %s, fd: %d", m[1], m[2], sMsg, fd))
+
+                local s2 = string.format("zinc_client decode proto module: %s, cmd: %s, msg: %s, fd: %d", m[1], m[2], sMsg, fd)
+                assert(mData, s2)
 
                 local net_module = m[1]
                 local msg_name = m[2]
@@ -201,6 +204,8 @@ end
 
 function M.Send(mMailBox, sMessage, mData)
     local sData = M.PackData(sMessage, mData)
+    print("发送消息", sMessage, #sData, mData)
+
     M.SendRaw(mMailBox, sData)
 end
 
@@ -221,6 +226,8 @@ function M.SendRaw(mMailBox, sData)
         iPow = iPow + 8
     end
     sData = table.concat(lst, "")
+
+    print("发送到网关", mMailBox, #sData, sData)
 
     skynet.send(iGateAddr, "zinc" , sData)
 end

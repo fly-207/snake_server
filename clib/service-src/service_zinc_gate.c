@@ -199,7 +199,8 @@ _forward(struct gate *g, struct connection * c, int size) {
 		databuffer_read(&c->buffer,&g->mp,temp+4, size);
 
 		printf("\n");
-		for (int i = 0; i< size; i++)
+		int i;
+		for (i = 0; i< size; i++)
 		{
 			printf("%02X ", *((unsigned char*)temp + i + 4));
 		}
@@ -318,6 +319,8 @@ dispatch_socket_message(struct gate *g, const struct skynet_socket_message * mes
  
 static int
 _cb(struct skynet_context * ctx, void * ud, int type, int session, uint32_t source, const void * msg, size_t sz) {
+
+	skynet_error(ctx, "C网关收到消息 type=%d", type);
 	struct gate *g = ud;
 	switch(type) {
 	case PTYPE_TEXT:

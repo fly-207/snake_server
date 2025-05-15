@@ -24,7 +24,9 @@ local iSessionIdx = 0 -- 会话ID计数器
 
 -- 处理单条命令的核心函数
 -- @param moduleLogic: 模块逻辑处理函数
--- @param mRecord: 消息记录
+-- @param mRecord: 消息记录 
+-- {source = MY_ADDR, module = sModule, cmd = sCmd, session = iNo, type = REQUEST_TYPE}
+-- {source = MY_ADDR, session = iNo, type = RESPONSE_TYPE}
 -- @param mData: 消息数据
 local function HandleSingleCmd(moduleLogic, mRecord, mData)
     local iType = mRecord.type

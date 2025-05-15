@@ -169,6 +169,7 @@ function CConnection:QueryLogin(mData)
     local fCallback = function (mRecord,mData)
         local oConn = global.oGateMgr:GetConnection(iHandle)
         if oConn then
+            print("进入到 QueryLogin2 流程", mData)
             oConn:QueryLogin2(mData)
         end
     end
@@ -178,8 +179,10 @@ end
 function CConnection:QueryLogin2(mData)
     local mClientResInfo = mData["res_file"] or {}
     if table_count(mClientResInfo["res_file"]) > 0 or mClientResInfo["code"] then
+        print("QueryLogin2 big", mData)
         self:SendBig("GS2CQueryLogin",{delete_file = mClientResInfo["delete_file"],res_file = mClientResInfo["res_file"],code= mClientResInfo["code"]})
     else
+        print("QueryLogin2 normal", mData)
         self:Send("GS2CQueryLogin",{delete_file = mClientResInfo["delete_file"],res_file = mClientResInfo["res_file"],code = mClientResInfo["code"]})
     end
 end

@@ -40,6 +40,11 @@ function QueryLogin(mRecord,mData)
     local oUpdateMgr = global.oUpdateMgr
     local mFileVersion = mData.res_file_version or {}
     local mResData = oUpdateMgr:QueryLogin(mFileVersion)
+
+    print("QueryLogin 消息返回", {
+        res_file = mResData
+    })
+    
     interactive.Response(mRecord.source, mRecord.session, {
         res_file = mResData
     })
