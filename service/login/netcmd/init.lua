@@ -3,6 +3,7 @@
 local global = require "global"
 local skynet = require "skynet"
 local record = require "public.record"
+local cjson = require "cjson"
 
 Cmds = {}
 
@@ -11,7 +12,7 @@ Cmds.other = import(service_path("netcmd.other"))
 
 function Invoke(sModule, sCmd, fd, mData)
     local m = Cmds[sModule]
-    print(string.format("网络消息 服务=%s sModule=%s sCmd=%s fd=%s mData=%s",SERVICE_NAME, sModule, sCmd, fd, mData))
+    print(string.format("网络消息 服务=%s sModule=%s sCmd=%s fd=%s mData=%s",SERVICE_NAME, sModule, sCmd, fd, cjson.encode(mData)))
 
     if m then
         local f = m[sCmd]

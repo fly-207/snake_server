@@ -3,6 +3,7 @@
 local global = require "global"
 local skynet = require "skynet"
 local record = require "public.record"
+local cjson = require "cjson"
 
 Cmds = {}
 
@@ -10,7 +11,7 @@ Cmds.common = import(service_path("routercmd.common"))
 
 function Invoke(sModule, sCmd, mRecord, mData)
     local m = Cmds[sModule]
-    -- print(string.format("网络消息 服务=%s sModule=%s sCmd=%s mRecord=%s mData=%s",SERVICE_NAME, sModule, sCmd, mRecord, mData))
+    -- print(string.format("qrcode 网络消息 服务=%s sModule=%s sCmd=%s mRecord=%s mData=%s",SERVICE_NAME, sModule, sCmd, mRecord, cjson.encode(mData)))
 
     if m then
         local f = m[sCmd]

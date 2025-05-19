@@ -51,11 +51,12 @@ Cmds.artifact = import(service_path("netcmd.artifact"))
 Cmds.wing = import(service_path("netcmd.wing"))
 Cmds.mentoring = import(service_path("netcmd.mentoring"))
 Cmds.kuafu = import(service_path("netcmd.kuafu"))
+local cjson = require "cjson"
 
 
 function Invoke(sModule, sCmd, fd, mData)
     local m = Cmds[sModule]
-    print(string.format("网络消息 服务=%s sModule=%s sCmd=%s fd=%s mData=%s",SERVICE_NAME, sModule, sCmd, fd, mData))
+    print(string.format("网络消息 服务=%s sModule=%s sCmd=%s fd=%s mData=%s",SERVICE_NAME, sModule, sCmd, fd, cjson.encode(mData)))
 
     if m then
         local f = m[sCmd]

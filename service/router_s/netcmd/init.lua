@@ -4,11 +4,12 @@ local global = require "global"
 local skynet = require "skynet"
 local router = require "base.router"
 local record = require "public.record"
+local cjson = require "cjson"
 
 function Invoke(iCmd, fd, mData)
     local oGateMgr = global.oGateMgr
     local oConn = oGateMgr:GetConnection(fd)
-    -- print(string.format("网络消息 服务=%s iCmd=%s fd=%s mData=%s",SERVICE_NAME, iCmd, fd, mData))
+    print(string.format("router服务端 网络消息 服务=%s iCmd=%s fd=%s mData=%s",SERVICE_NAME, iCmd, fd, cjson.encode(mData)))
 
     if oConn then
         if iCmd == router.PROTO_P2R.P2RRouter then

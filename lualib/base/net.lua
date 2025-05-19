@@ -5,7 +5,7 @@ local extype = require "base.extype"
 local netproto = require "base.netproto"
 local rt_monitor = require "base.rt_monitor"
 local bigpacket = import(lualib_path("public.bigpacket"))
-
+local cjson = require "cjson"
 local unpack = table.unpack
 
 local M = {}
@@ -53,26 +53,14 @@ function M.Dispatch(netcmd)
         unpack = function (...) return ... end,
         dispatch = function (session, source, msg, sz)
 
-            print("收到 gate zinc_client 消息", msg, sz)
-
             if netcmd then
                 local sData = netpack.tostring2(msg, sz)
                 assert(#sData >= 6, "zinc_client unpack error")
-
-                print("================ 原始内容 ===================")
-                local t = {}
-                for i = 1, #sData do
-                    local byte = string.byte(sData, i)
-                    t[#t+1] = string.format("%02X ", byte)
-                end
-                print(table.concat(t, " "))
 
                 local fd = sData:byte(1)*(2^24) + sData:byte(2)*(2^16) + sData:byte(3)*(2^8) + sData:byte(4)
 
                 -- 消息号, 例如 C2GSLoginAccount 对应的 iType 是 1001
                 local iType = sData:byte(5)*(2^8) + sData:byte(6)
-
-                print(string.format("gate zinc_client 消息 fd=%s iType=%s", fd, iType))
 
                 -- m 包含两个值 ( [模块名login], iType对应的协议串C2GSLoginAccount), 协议串==处理函数名==pb结构体名
                 local m = netproto.NetfindFunc("FindC2GSByType", iType)
@@ -82,6 +70,9 @@ function M.Dispatch(netcmd)
 
                 local s2 = string.format("zinc_client decode proto module: %s, cmd: %s, msg: %s, fd: %d", m[1], m[2], sMsg, fd)
                 assert(mData, s2)
+
+                print(string.format("gate zinc_client 消息 fd=%s iType=%s module: %s, cmd: %s, err-msg: %s, fd: %d", fd, iType, m[1], m[2], sMsg, fd))
+                print(string.format("gate zinc_client 消息 fd=%s iType=%s mData: %s", fd, iType, cjson.encode(mData)))
 
                 local net_module = m[1]
                 local msg_name = m[2]
@@ -204,7 +195,7 @@ end
 
 function M.Send(mMailBox, sMessage, mData)
     local sData = M.PackData(sMessage, mData)
-    print("发送消息", sMessage, #sData, mData)
+    print(string.format("net 发送消息 pb_name=%s 长度=%s body=%s", sMessage, #sData, cjson.encode(mData)))
 
     M.SendRaw(mMailBox, sData)
 end
@@ -227,7 +218,7 @@ function M.SendRaw(mMailBox, sData)
     end
     sData = table.concat(lst, "")
 
-    print("发送到网关", mMailBox, #sData, sData)
+    print(string.format("net 发送到网关 mMailBox=%s data长度=%s", cjson.encode(mMailBox), #sData))
 
     skynet.send(iGateAddr, "zinc" , sData)
 end

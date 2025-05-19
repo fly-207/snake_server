@@ -14,9 +14,7 @@ function Cmds.open(source, handle, parm)
     local oGateMgr = global.oGateMgr
     local oGate = oGateMgr:GetGate(source)
 
-    print("新连接到达 source=", source)
-    print("新连接到达 handle=", handle)
-    print("新连接到达 parm=", parm)
+    print(string.format("新连接到达 source=%s handle=%s parm=%s", source, handle, parm))
 
     if oGate then
         if oGate:GetConnection(handle) then

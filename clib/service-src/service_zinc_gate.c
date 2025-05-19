@@ -198,14 +198,6 @@ _forward(struct gate *g, struct connection * c, int size) {
 		memcpy(temp, s, 4);
 		databuffer_read(&c->buffer,&g->mp,temp+4, size);
 
-		printf("\n");
-		int i;
-		for (i = 0; i< size; i++)
-		{
-			printf("%02X ", *((unsigned char*)temp + i + 4));
-		}
-		printf("\n");
-
 		if (g->xor_open){
 			xor_code((unsigned char *)(temp+4),size);
                        	}
@@ -235,8 +227,6 @@ dispatch_message(struct gate *g, struct connection *c, int id, void * data, int 
 	databuffer_push(&c->buffer,&g->mp, data, sz);
 	for (;;) {
 		int size = databuffer_readheader(&c->buffer, &g->mp, g->header_size);
-
-		skynet_error(ctx, "客户端消息 头部长度值=%d", size);
 
 		if (size < 0) {
 			return;
@@ -320,7 +310,7 @@ dispatch_socket_message(struct gate *g, const struct skynet_socket_message * mes
 static int
 _cb(struct skynet_context * ctx, void * ud, int type, int session, uint32_t source, const void * msg, size_t sz) {
 
-	skynet_error(ctx, "C网关收到消息 type=%d", type);
+	skynet_error(ctx, "C网关收到消息 type=%d sz=%d", type, sz);
 	struct gate *g = ud;
 	switch(type) {
 	case PTYPE_TEXT:
