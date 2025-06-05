@@ -90,6 +90,9 @@ _parm(char *msg, int sz, int command_sz) {
 static void
 _forward_agent(struct gate * g, int fd, uint32_t agentaddr, uint32_t clientaddr) {
 	int id = hashid_lookup(&g->hash, fd);
+	struct skynet_context * ctx = g->ctx;
+//	skynet_error(ctx, "[=== c gate] 更改代理 id=%d agentaddr=%d clientaddr=%d", id, agentaddr, clientaddr);
+
 	if (id >=0) {
 		struct connection * agent = &g->conn[id];
 		agent->agent = agentaddr;
@@ -201,6 +204,9 @@ _forward(struct gate *g, struct connection * c, int size) {
 		if (g->xor_open){
 			xor_code((unsigned char *)(temp+4),size);
                        	}
+
+//		skynet_error(ctx, "[=== c gate] skynet_send发送完整包消息 id=%d source=%d dest=%d", id, c->client, c->agent);
+
 		skynet_send(ctx, c->client, c->agent, g->client_tag | PTYPE_TAG_DONTCOPY, 0 , temp, size + 4);
 	}
 	//} else if (g->watchdog) {
@@ -310,7 +316,7 @@ dispatch_socket_message(struct gate *g, const struct skynet_socket_message * mes
 static int
 _cb(struct skynet_context * ctx, void * ud, int type, int session, uint32_t source, const void * msg, size_t sz) {
 
-	skynet_error(ctx, "C网关收到消息 type=%d sz=%d", type, sz);
+//	skynet_error(ctx, "C网关收到消息 type=%d sz=%d", type, sz);
 	struct gate *g = ud;
 	switch(type) {
 	case PTYPE_TEXT:
