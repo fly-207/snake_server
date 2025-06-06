@@ -195,8 +195,7 @@ end
 
 function M.Send(mMailBox, sMessage, mData)
     local sData = M.PackData(sMessage, mData)
-    print(string.format("net 发送消息 pb_name=%s 长度=%s body=%s", sMessage, #sData, cjson.encode(mData)))
-
+    print(string.format("net 发送消息 pb_name=%s", sMessage), mData)
     M.SendRaw(mMailBox, sData)
 end
 

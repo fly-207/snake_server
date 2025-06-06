@@ -61,6 +61,7 @@ function CConnection:GetNetHandle()
 end
 
 function CConnection:Send(sMessage, mData)
+    skynet.error("往客户端发送消息", sMessage, mData)
     net.Send({gate = self.m_iGateAddr, fd = self.m_iHandle}, sMessage, mData)
 end
 
@@ -295,7 +296,7 @@ function CConnection:_LoginAccount1(errcode)
     local sCpsChannel = self:GetCpsChannel()
     local iFakePlatform = self:GetFakePlatform()
 
-    local bCheck, sMsg = oGateMgr:CheckAccoutLogin(sAccount, self:GetChannel(), self.m_sIP)
+    local bCheck, sMsg = oGateMgr:CheckAccountLogin(sAccount, self:GetChannel(), self.m_sIP)
     if not bCheck then
         self:Send("GS2CNotify", {
             cmd = sMsg,
@@ -333,6 +334,8 @@ function  CConnection:_LoginAccount2()
         cmd = "GetPlayerListByAccount",
         cond = {account = sAccount, channel = iChannel, platform = self:GetFakePlatform()},
     }
+    print("请求角色信息", self:GetFakePlatform(), mInfo)
+
     gamedb.LoadDb("login", "common", "DbOperate", mInfo, function (mRecord, mData)
         local oConn = global.oGateMgr:GetConnection(iHandle)
         if oConn then

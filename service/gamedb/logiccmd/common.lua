@@ -1,4 +1,5 @@
 --import module
+local json = require "cjson"
 local global = require "global"
 local skynet = require "skynet"
 local interactive = require "base.interactive"
@@ -27,6 +28,8 @@ function DbOperate(mRecord, mData)
     local sCmd = mData.cmd
     local mCond = mData.cond
     local mSave = mData.data
+
+    skynet.error("====================", "DbOperate", json.encode(mData))
     if mSave then
         mongoop.ChangeBeforeSave(mSave)
     end

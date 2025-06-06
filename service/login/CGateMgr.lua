@@ -313,7 +313,7 @@ function CGateMgr:IsLinkedServer(sServerKey)
     return self.m_mLinkServers[sServerKey]
 end
 
-function CGateMgr:CheckAccoutLogin(sAccount, iChannel, sIP)
+function CGateMgr:CheckAccountLogin(sAccount, iChannel, sIP)
     if self.m_mIpBlacklist[sIP] then
         return false, "账号已被封停[0]，请联系客服"
     end

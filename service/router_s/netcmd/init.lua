@@ -9,7 +9,11 @@ local cjson = require "cjson"
 function Invoke(iCmd, fd, mData)
     local oGateMgr = global.oGateMgr
     local oConn = oGateMgr:GetConnection(fd)
-    print(string.format("router服务端 网络消息 服务=%s iCmd=%s fd=%s mData=%s",SERVICE_NAME, iCmd, fd, cjson.encode(mData)))
+
+    -- 排除 心跳 协议日志
+    if iCmd ~= 102 then
+        print(string.format("router服务端 网络消息 服务=%s iCmd=%s fd=%s mData=%s",SERVICE_NAME, iCmd, fd, cjson.encode(mData)))
+    end
 
     if oConn then
         if iCmd == router.PROTO_P2R.P2RRouter then

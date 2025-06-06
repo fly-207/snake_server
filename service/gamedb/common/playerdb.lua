@@ -3,6 +3,7 @@ local global = require "global"
 local skynet = require "skynet"
 local mongoop = require "base.mongoop"
 local interactive = require "base.interactive"
+local json = require "cjson"
 
 local sPlayerTableName = "player"
 
@@ -47,13 +48,18 @@ function GetPlayerListByAccount(mCond, mData)
     local m = oGameDb:Find(sPlayerTableName, {account = mCond.account, channel = mCond.channel, platform = mCond.platform}, {pid = true, name = true, account = true, base_info = true, deleted = true, born_server = true})
     local mRet = {}
     while m:hasNext() do
-        table.insert(mRet, m:next())
+        local tmp = m:next()
+        table.insert(mRet, tmp)
     end
-    return {
+    local tmp = {
         data = mRet,
         account = mCond.account,
         channel = mCond.channel
     }
+    print("查看玩家列表", mCond)
+    print("查看玩家列表结果返回", tmp)
+
+    return tmp
 end
 
 function LoadPlayerMain(mCond, mData)
