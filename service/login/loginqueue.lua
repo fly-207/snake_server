@@ -27,9 +27,9 @@ function CLoginQueueMgr:New()
     o.m_mCallList = {}      -- 叫到号列表
     o.m_lQuickList = {}     -- 快速通道
 
-    o.m_mOnlinePlayers = {}
-    o.m_iOnlineCnt = 0
-    o.m_mPlayerHandles = {}
+    o.m_mOnlinePlayers = {} -- 在线用户 pid:[true|nil]
+    o.m_iOnlineCnt = 0      -- m_mOnlinePlayers 有效数据长度(冗余数据)
+    o.m_mPlayerHandles = {} -- 用户 pid 和 socket 的映射 pid:sock
 
     o.m_iLastSecCnt = 0
     o.m_iPerSecondCnt = 0
@@ -144,16 +144,16 @@ function CLoginQueueMgr:ValidLogin(pid, iHandle)
 end
 
 function CLoginQueueMgr:OnLogin(pid)
-    if not self.m_mOnlinePlayers[pid] then
-        self.m_mOnlinePlayers[pid] = true
-        self.m_iOnlineCnt = self.m_iOnlineCnt + 1
-        self.m_iPerSecondCnt = self.m_iPerSecondCnt + 1
+    if not self.m_mOnlinePlayers[pid] then  -- 在线用户 pid:[true|nil]
+        self.m_mOnlinePlayers[pid] = true   -- 记录 player 角色在线状态
+        self.m_iOnlineCnt = self.m_iOnlineCnt + 1   -- 在线人数累加
+        self.m_iPerSecondCnt = self.m_iPerSecondCnt + 1 -- 每秒登录个数, 用来估算队列中剩余时间
     end
     if self.m_mCallList[pid] then
-        self.m_mCallList[pid] = nil
+        self.m_mCallList[pid] = nil -- 清空等待队列记录数据
     end
     if self.m_mPlayerHandles[pid] then
-        self.m_mPlayerHandles[pid] = nil
+        self.m_mPlayerHandles[pid] = nil -- 清空等待队列记录数据
     end
 end
 
@@ -189,9 +189,9 @@ function CLoginQueueMgr:PendingQueue(pid, iHandle)
         return
     end
     local iNumber = self:GetNumber()
-    self.m_mQueueList[iNumber] = pid
-    self.m_mQueuePlayers[pid] = iNumber
-    self.m_mPlayerHandles[pid] = iHandle
+    self.m_mQueueList[iNumber] = pid    -- 排队列表
+    self.m_mQueuePlayers[pid] = iNumber -- 排队序列号
+    self.m_mPlayerHandles[pid] = iHandle    -- 用户sock
     self:GS2CLoginPendingUI(pid)
 end
 
