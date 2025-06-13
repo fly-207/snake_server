@@ -1,5 +1,20 @@
 -- 定时器服务模块
 -- 提供基于 skynet 的定时器功能，支持添加、删除定时回调
+
+--[[
+    整个模块的核心功能是 DriverFunc, 该函数使用 skynet.timeout
+        skynet.timeout 超时后调用 DriverFunc, 在 DriverFunc 中重新计算时间, 将超时id添加到 m_lCbHandles 中
+        随后执行m_lCbHandles所有的id事件
+
+    模块中单例 oTimerMgr 是功能的执行者, 而多个 CTimer 对象只是将 string 类型的 key 和 oTimerMgr 中 id 类型 key 映射
+        便于取消
+
+    m_oCobj 是一个时间轮数据结构对象, 用来记录每个事件id和时间偏移, 待时间到来后便记录到 m_lCbHandles 中
+
+    思考
+        如果说定时任务太多, 需要自己用到时间轮数据结构, 可是 skynet 本身就是用这个实现的, 又显得很多余
+]]
+
 local skynet = require "skynet"
 local ltimer = require "ltimer"
 local rt_monitor = require "base.rt_monitor"
