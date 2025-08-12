@@ -18,7 +18,7 @@ local analy = import(lualib_path("public.dataanaly"))
 local ipoperate = import(lualib_path("public.ipoperate"))
 local serverinfo = import(lualib_path("public.serverinfo"))
 local gamedb = import(lualib_path("public.gamedb"))
-
+local cjson = require "cjson"
 
 print("CConnection 文件被导入")
 
@@ -61,7 +61,7 @@ function CConnection:GetNetHandle()
 end
 
 function CConnection:Send(sMessage, mData)
-    skynet.error("往客户端发送消息", sMessage, mData)
+    skynet.error("往客户端发送消息", sMessage, cjson.encode(mData))
     net.Send({gate = self.m_iGateAddr, fd = self.m_iHandle}, sMessage, mData)
 end
 

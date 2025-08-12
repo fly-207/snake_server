@@ -931,6 +931,7 @@ function CPlayer:LoginEnd(bReEnter)
 end
 
 function CPlayer:OnLogin(bReEnter)
+    -- 记录玩家登录日志（账号、设备、IP、平台等信息）
     local mMail = self:MailAddr()
     local mLogData = self:LogData()
     mLogData["account"] = self:GetAccount()
@@ -945,7 +946,7 @@ function CPlayer:OnLogin(bReEnter)
     end
     record.log_db("player", "login", mLogData)
 
-    -- 数据中心log
+    -- 数据中心登录/登出分析信息
     self:LoginOrOutAnalyInfo(1)
 
     local iNowTime = get_time()
@@ -954,17 +955,21 @@ function CPlayer:OnLogin(bReEnter)
     local oTeamMgr =  global.oTeamMgr
     self.m_iDurationCalTime = iNowTime
 
+    -- 首次登录时进行预检查（如数据修复等）
     if not bReEnter then
         self:PreCheck()
     end
+    -- 登录前的准备逻辑（如同步部分数据）
     self:PreLogin(bReEnter)
 
+    -- 重新计算物品、技能、神器、翅膀等属性
     self.m_oItemCtrl:CalApply(self,bReEnter)
     self.m_oSkillCtrl:CalApply(self,bReEnter)
     self.m_oArtifactCtrl:CalApply(self,bReEnter)
     self.m_oWingCtrl:CalApply(self,bReEnter)
     self:CheckAttr()
 
+    -- 各个个人模块的登录回调
     local oProfile = self:GetProfile()
     local oFriend = self:GetFriend()
     local oPrivacy = self:GetPrivacy()
@@ -980,24 +985,30 @@ function CPlayer:OnLogin(bReEnter)
     self.m_oWingCtrl:OnLogin(self,bReEnter)
     global.oScoreCache:RemoveExclude(self:GetPid())
 
+    -- 推送角色基础信息到客户端
     self:GS2CLoginRole()
     self.m_fHeartBeatTime = get_time()
 
+    -- 通知世界管理器玩家上线
     oWorldMgr:OnLogin(self, bReEnter)
-
+    -- 通知场景管理器玩家上线
     local oSceneMgr = global.oSceneMgr
     oSceneMgr:OnLogin(self, bReEnter)
 
+    -- 如果玩家在战斗中，通知战斗管理器
     local oWar = self.m_oActiveCtrl:GetNowWar()
     if oWar then
         local oWarMgr = global.oWarMgr
         oWarMgr:OnLogin(self, bReEnter)
     end
+    -- 通知消息管理器
     oNotifyMgr:OnLogin(self, bReEnter)
 
+    -- 首次登录后处理（如发送欢迎信息等）
     if not bReEnter then
         self:AfterSendLogin()
     end
+    -- 各控制器的登录回调，确保所有子系统初始化
     self.m_oItemCtrl:OnLogin(self,bReEnter)
     self.m_oSkillCtrl:OnLogin(self,bReEnter)
     -- self.m_oTaskCtrl:OnLogin(self,bReEnter)
@@ -1022,6 +1033,7 @@ function CPlayer:OnLogin(bReEnter)
     self.m_oMarryCtrl:OnLogin(self, bReEnter)
     self:SyncStrengthenInfo(-1, true)
 
+    -- 通知全局管理器玩家上线
     local oTeamMgr = global.oTeamMgr
     oTeamMgr:OnLogin(self,bReEnter)
 
@@ -1066,9 +1078,11 @@ function CPlayer:OnLogin(bReEnter)
     global.oChatMgr:OnLogin(self, bReEnter)
     global.oYunYingInfoMgr:OnLogin(self, bReEnter)
 
+    -- 注册客户端更新推送，数据同步到数据中心
     self:RegisterClientUpdate()
     self:SyncRoleData2DataCenter()
 
+    -- 首次登录后的特殊处理（如储备经验、金币/银币超限、定时任务等）
     if not bReEnter then
         global.oPayMgr:DealUntreatedOrder(self)
         global.oMergerMgr:OnLogin(self)
@@ -1122,10 +1136,12 @@ function CPlayer:OnLogin(bReEnter)
         self:Schedule()
     end
 
+    -- 偏移管理器登录处理（如有）
     if global.oOffsetMgr then
         global.oOffsetMgr:OnLogin(self)
     end
 
+    -- 登录结束回调，做收尾处理
     self:LoginEnd(bReEnter)
 end
 

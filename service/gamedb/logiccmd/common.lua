@@ -29,11 +29,12 @@ function DbOperate(mRecord, mData)
     local mCond = mData.cond
     local mSave = mData.data
 
-    skynet.error("====================", "DbOperate", json.encode(mData))
+    skynet.error("->->->->->->->->->->->->", "DbOperate begin", json.encode(mData))
     if mSave then
         mongoop.ChangeBeforeSave(mSave)
     end
     local ret = dbcommon.Invoke(sModule, sCmd, mCond, mSave)
+    skynet.error("<-<-<-<-<-<-<-<-<-<-<-<-", "DbOperate end", json.encode(mData), json.encode(ret))
     if ret then
         mongoop.ChangeAfterLoad(ret)
         interactive.Response(mRecord.source, mRecord.session, ret)
