@@ -1,0 +1,12 @@
+授人以鱼不如授人以渔
+使用前请仔细查看文件内注释
+
+service - 服务端内容  放置在服务端snake/service内并覆盖
+wwwroot - 网站部分
+
+例程仅供参考 请酌情根据此基础搭建自己想要的功能
+
+如需更改后台端口 (例如7777) 请在/snake/service/webroutern内 main.lua文件内搜索
+local id = socket.listen("0.0.0.0", iWebPort)
+改为
+local id = socket.listen("127.0.0.1", 7777)
