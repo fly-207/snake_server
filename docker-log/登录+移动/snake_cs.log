@@ -1,0 +1,180 @@
+[root@02100a255bf7 code]# ./build/skynet ./config/cs_config.lua
+[:04-11_15-40-04][:00000001] LAUNCH logger 
+[:04-11_15-40-04][:00000002] LAUNCH snlua bootstrap
+[:04-11_15-40-04][:00000003] LAUNCH snlua launcher
+[:04-11_15-40-04][:00000004] LAUNCH snlua cdummy
+[:04-11_15-40-04][:00000005] LAUNCH harbor 0 4
+[:04-11_15-40-04][:00000006] LAUNCH snlua datacenterd
+[:04-11_15-40-04][:00000007] LAUNCH snlua service_mgr
+[:04-11_15-40-04][:00000008] LAUNCH snlua cs_launcher
+[:04-11_15-40-05][:00000008] [INFO] cs start
+[:04-11_15-40-05][:00000009] LAUNCH snlua debug_console 10001
+[:04-11_15-40-05][:00000009] Start debug console at 127.0.0.1 10001
+[:04-11_15-40-05][:0000000a] LAUNCH snlua res
+[:04-11_15-40-05][:0000000b] LAUNCH snlua sharedatad
+[:04-11_15-40-05][:0000000b] Memory warning 32.00 M
+[:04-11_15-40-06][:0000000a] [INFO] res service booted
+[:04-11_15-40-06][:0000000c] LAUNCH snlua rt_monitor
+[:04-11_15-40-06][:0000000c] [INFO] rt_monitor service booted
+[:04-11_15-40-06][:0000000d] LAUNCH snlua mem_monitor
+[:04-11_15-40-06][:0000000d] [INFO] mem_monitor service booted
+[:04-11_15-40-06][:0000000e] LAUNCH snlua dictator
+[:04-11_15-40-06][:0000000e] start dictator at 127.0.0.1 10002
+[:04-11_15-40-06][:0000000e] [INFO] dictator service booted
+[:04-11_15-40-06][:0000000f] LAUNCH snlua router_s 1
+[:04-11_15-40-06][:00000010] LAUNCH zinc_gate S :0000000f 10010 13 10000 0
+[:04-11_15-40-06][:0000000f] [INFO] router_s service booted
+[:04-11_15-40-06][:00000011] LAUNCH snlua router_s 2
+[:04-11_15-40-06][:00000012] LAUNCH zinc_gate S :00000011 10011 13 10000 0
+[:04-11_15-40-06][:00000011] [INFO] router_s service booted
+[:04-11_15-40-06][:00000013] LAUNCH snlua router_s 3
+[:04-11_15-40-07][:00000014] LAUNCH zinc_gate S :00000013 10012 13 10000 0
+[:04-11_15-40-07][:00000013] [INFO] router_s service booted
+[:04-11_15-40-07][:00000015] LAUNCH snlua router_s 4
+[:04-11_15-40-07][:00000016] LAUNCH zinc_gate S :00000015 10013 13 10000 0
+[:04-11_15-40-07][:00000015] [INFO] router_s service booted
+[:04-11_15-40-07][:00000017] LAUNCH snlua router_c
+[:04-11_15-40-07][:00000017] [INFO] router_c service booted
+[:04-11_15-40-07][:00000018] LAUNCH snlua webrouter
+[:04-11_15-40-07][:00000019] LAUNCH snlua webhandler
+[:04-11_15-40-07][:00000019] [INFO] webhandler service booted
+[:04-11_15-40-07][:0000001a] LAUNCH snlua webhandler
+[:04-11_15-40-07][:0000001a] [INFO] webhandler service booted
+[:04-11_15-40-07][:0000001b] LAUNCH snlua webhandler
+[:04-11_15-40-07][:0000001b] [INFO] webhandler service booted
+[:04-11_15-40-07][:0000001c] LAUNCH snlua webhandler
+[:04-11_15-40-07][:0000001c] [INFO] webhandler service booted
+[:04-11_15-40-07][:0000001d] LAUNCH snlua webhandler
+[:04-11_15-40-08][:0000001d] [INFO] webhandler service booted
+[:04-11_15-40-08][:0000001e] LAUNCH snlua webhandler
+[:04-11_15-40-08][:0000001e] [INFO] webhandler service booted
+[:04-11_15-40-08][:0000001f] LAUNCH snlua webhandler
+[:04-11_15-40-08][:0000001f] [INFO] webhandler service booted
+[:04-11_15-40-08][:00000020] LAUNCH snlua webhandler
+[:04-11_15-40-08][:00000020] [INFO] webhandler service booted
+[:04-11_15-40-08][:00000021] LAUNCH snlua webhandler
+[:04-11_15-40-08][:00000021] [INFO] webhandler service booted
+[:04-11_15-40-08][:00000022] LAUNCH snlua webhandler
+[:04-11_15-40-08][:00000022] [INFO] webhandler service booted
+[:04-11_15-40-08][:00000018] [INFO] webrouter listen web port 10003
+[:04-11_15-40-08][:00000018] [INFO] webrouter service booted
+[:04-11_15-40-08][:00000023] LAUNCH snlua gamedb 1
+[:04-11_15-40-09][:00000023] [INFO] gamedb service booted
+[:04-11_15-40-09][:00000024] LAUNCH snlua gamedb 2
+[:04-11_15-40-09][:00000024] [INFO] gamedb service booted
+[:04-11_15-40-09][:00000025] LAUNCH snlua gamedb 3
+[:04-11_15-40-09][:00000025] [INFO] gamedb service booted
+[:04-11_15-40-09][:00000026] LAUNCH snlua gamedb 4
+[:04-11_15-40-09][:00000026] [INFO] gamedb service booted
+[:04-11_15-40-09][:00000027] LAUNCH snlua logdb
+[:04-11_15-40-09][:00000027] [INFO] logdb service booted
+[:04-11_15-40-09][:00000028] LAUNCH snlua serversetter
+[:04-11_15-40-10][:00000028] [INFO] serversetter service booted
+[:04-11_15-40-10][:00000029] LAUNCH snlua idsupply
+[:04-11_15-40-10][:00000029] [INFO] idsupply service booted
+[:04-11_15-40-10][:0000002a] LAUNCH snlua loginverify 1
+[:04-11_15-40-10][:0000002a] [INFO] loginverify service booted
+[:04-11_15-40-10][:0000002b] LAUNCH snlua loginverify 2
+[:04-11_15-40-10][:0000002b] [INFO] loginverify service booted
+[:04-11_15-40-10][:0000002c] LAUNCH snlua loginverify 3
+[:04-11_15-40-10][:0000002c] [INFO] loginverify service booted
+[:04-11_15-40-10][:0000002d] LAUNCH snlua loginverify 4
+[:04-11_15-40-10][:0000002d] [INFO] loginverify service booted
+[:04-11_15-40-10][:0000002e] LAUNCH snlua datacenter
+[:04-11_15-40-11][:0000002e] [INFO] datacenter service booted
+[:04-11_15-40-11][:0000002f] LAUNCH snlua logfile
+[:04-11_15-40-11][:0000002f] [INFO] logfile service booted
+[:04-11_15-40-11][:00000030] LAUNCH snlua logmonitor
+[:04-11_15-40-11][:00000030] [INFO] logmonitor service booted
+[:04-11_15-40-11][:00000031] LAUNCH snlua redeemcode
+[:04-11_15-40-11][:00000031] [INFO] redeemcode service booted
+[:04-11_15-40-11][:00000032] LAUNCH snlua qrcode 10004
+[:04-11_15-40-11][:00000033] LAUNCH zinc_gate S :00000032 10004 13 10000 -2271245531232191831
+[:04-11_15-40-11][:00000032] [INFO] qrcode service booted
+[:04-11_15-40-11][:00000034] LAUNCH snlua qrcode 10005
+[:04-11_15-40-11][:00000035] LAUNCH zinc_gate S :00000034 10005 13 10000 -2271245531232191831
+[:04-11_15-40-11][:00000034] [INFO] qrcode service booted
+[:04-11_15-40-11][:00000036] LAUNCH snlua qrcode 10006
+[:04-11_15-40-12][:00000037] LAUNCH zinc_gate S :00000036 10006 13 10000 -2271245531232191831
+[:04-11_15-40-12][:00000036] [INFO] qrcode service booted
+[:04-11_15-40-12][:00000038] LAUNCH snlua qrcode 10007
+[:04-11_15-40-12][:00000039] LAUNCH zinc_gate S :00000038 10007 13 10000 -2271245531232191831
+[:04-11_15-40-12][:00000038] [INFO] qrcode service booted
+[:04-11_15-40-12][:0000003a] LAUNCH snlua qrcode 10008
+[:04-11_15-40-12][:0000003b] LAUNCH zinc_gate S :0000003a 10008 13 10000 -2271245531232191831
+[:04-11_15-40-12][:0000003a] [INFO] qrcode service booted
+[:04-11_15-40-12][:0000003c] LAUNCH snlua qrcode 10009
+[:04-11_15-40-12][:0000003d] LAUNCH zinc_gate S :0000003c 10009 13 10000 -2271245531232191831
+[:04-11_15-40-12][:0000003c] [INFO] qrcode service booted
+[:04-11_15-40-12][:0000003e] LAUNCH snlua pay 1
+[:04-11_15-40-12][:0000003e] [INFO] pay service booted
+[:04-11_15-40-12][:0000003f] LAUNCH snlua pay 2
+[:04-11_15-40-13][:0000003f] [INFO] pay service booted
+[:04-11_15-40-13][:00000040] LAUNCH snlua pay 3
+[:04-11_15-40-13][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":3,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-40-13][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":3,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922013},"whitelist":{}}}}
+[:04-11_15-40-13][:00000040] [INFO] pay service booted
+[:04-11_15-40-13][:00000041] LAUNCH snlua pay 4
+[:04-11_15-40-13][:00000041] [INFO] pay service booted
+[:04-11_15-40-13][:00000042] LAUNCH snlua backendinfo
+[:04-11_15-40-13][:00000042] [INFO] backendinfo service booted
+[:04-11_15-40-13][:00000043] LAUNCH snlua merger
+[:04-11_15-40-13][:00000043] [INFO] merger service booted
+[:04-11_15-40-13][:00000008] [INFO] cs all service booted
+[:04-11_15-40-13][:00000008] KILL self
+[:04-11_15-40-13][:00000002] KILL self
+[:04-11_15-40-17][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":32,"cmd":"Forward","dessk":"cs","session":2,"des":".serversetter"},"data":{"cmd":"GetSetterConfig","data":{"ver":0,"server_key":"dev_gs10001"}}}
+[:04-11_15-40-17][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":2,"des":32},"data":{"errcode":0,"data":{"black_account":{},"version":1,"whitelist":{},"server_info":{"type":"dev","run_state":1,"open_time":1506847941,"area":1,"link_server":"dev_gs10001","is_show":1,"desc":"服务器即将开放敬请期待","name":"开发服","is_new":1,"recommend":1,"server_key":"dev_gs10001","index":1,"start_time":1506847941},"black_ip":{},"link_server":{"dev_gs10001":1}}}}
+[:04-11_15-40-22][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":4,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-40-22][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":4,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922021},"whitelist":{}}}}
+[:04-11_15-40-34][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":5,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-40-34][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":5,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922033},"whitelist":{}}}}
+[:04-11_15-40-47][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":6,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-40-47][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":6,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922045},"whitelist":{}}}}
+[:04-11_15-40-47][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":32,"cmd":"Forward","dessk":"cs","session":3,"des":".serversetter"},"data":{"cmd":"GetSetterConfig","data":{"ver":1,"server_key":"dev_gs10001"}}}
+[:04-11_15-40-47][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":3,"des":32},"data":{"errcode":0,"data":{"version":1}}}
+[:04-11_15-40-51][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"cmd":"UpdateRoleInfo","srcsk":"gs10001","src":44,"module":"common","dessk":"cs","type":1,"des":".datacenter"},"data":{"pid":10001,"grade":50,"login_time":1775922050,"school":3,"icon":1320,"name":"长孙南琪"}}
+[:04-11_15-40-51][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"cmd":"DealUntreatedOrder","srcsk":"gs10001","src":44,"module":"common","dessk":"cs","type":1,"des":".pay2"},"data":{"pid":10001,"server":"gs10001"}}
+[:04-11_15-40-51][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"GetShowIdByPid","dessk":"cs","session":7,"des":".idsupply"},"data":{"pid":10001,"set":1}}
+[:04-11_15-40-51][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":41,"dessk":"gs10001","session":7,"des":44},"data":{}}
+[:04-11_15-40-56][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":8,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-40-56][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":8,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922053},"whitelist":{}}}}
+[:04-11_15-41-08][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":9,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-41-08][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":9,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922065},"whitelist":{}}}}
+[:04-11_15-41-10][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"cmd":"CSGetOpenStatus","srcsk":"cs","src":40,"module":"common","dessk":"gs10001","type":1,"des":".login"},"data":{}}
+[:04-11_15-41-10][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"cmd":"GSSetOpenState","srcsk":"gs10001","src":32,"module":"common","dessk":"cs","type":1,"des":".serversetter"},"data":{"status":3,"server_key":"dev_gs10001"}}
+[:04-11_15-41-17][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":32,"cmd":"Forward","dessk":"cs","session":4,"des":".serversetter"},"data":{"cmd":"GetSetterConfig","data":{"ver":1,"server_key":"dev_gs10001"}}}
+[:04-11_15-41-17][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":4,"des":32},"data":{"errcode":0,"data":{"version":1}}}
+[:04-11_15-41-22][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":10,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-41-22][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":10,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922081},"whitelist":{}}}}
+[:04-11_15-41-30][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":11,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-41-30][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":11,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922089},"whitelist":{}}}}
+[:04-11_15-41-40][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":12,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-41-40][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":12,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922097},"whitelist":{}}}}
+[:04-11_15-41-47][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":32,"cmd":"Forward","dessk":"cs","session":5,"des":".serversetter"},"data":{"cmd":"GetSetterConfig","data":{"ver":1,"server_key":"dev_gs10001"}}}
+[:04-11_15-41-47][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":5,"des":32},"data":{"errcode":0,"data":{"version":1}}}
+[:04-11_15-41-49][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":13,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-41-49][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":13,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922109},"whitelist":{}}}}
+[:04-11_15-41-59][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":14,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-41-59][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":14,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922117},"whitelist":{}}}}
+[:04-11_15-42-08][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":15,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-42-08][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":15,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922125},"whitelist":{}}}}
+[:04-11_15-42-10][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"cmd":"CSGetOpenStatus","srcsk":"cs","src":40,"module":"common","dessk":"gs10001","type":1,"des":".login"},"data":{}}
+[:04-11_15-42-10][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"cmd":"GSSetOpenState","srcsk":"gs10001","src":32,"module":"common","dessk":"cs","type":1,"des":".serversetter"},"data":{"status":3,"server_key":"dev_gs10001"}}
+[:04-11_15-42-15][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":16,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-42-15][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":16,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922133},"whitelist":{}}}}
+[:04-11_15-42-17][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":32,"cmd":"Forward","dessk":"cs","session":6,"des":".serversetter"},"data":{"cmd":"GetSetterConfig","data":{"ver":1,"server_key":"dev_gs10001"}}}
+[:04-11_15-42-17][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":6,"des":32},"data":{"errcode":0,"data":{"version":1}}}
+[:04-11_15-42-29][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":17,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-42-29][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":17,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922149},"whitelist":{}}}}
+[:04-11_15-42-42][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":18,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-42-42][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":18,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922161},"whitelist":{}}}}
+[:04-11_15-42-47][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":32,"cmd":"Forward","dessk":"cs","session":7,"des":".serversetter"},"data":{"cmd":"GetSetterConfig","data":{"ver":1,"server_key":"dev_gs10001"}}}
+[:04-11_15-42-47][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":7,"des":32},"data":{"errcode":0,"data":{"version":1}}}
+[:04-11_15-42-55][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":19,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-42-55][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":19,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922173},"whitelist":{}}}}
+[:04-11_15-43-02][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=35.0 mData={"record":{"module":"common","type":2,"srcsk":"gs10001","src":44,"cmd":"SyncServerStatus","dessk":"cs","session":20,"des":".serversetter"},"data":{"gs10001":{"server_grade":45}}}
+[:04-11_15-43-02][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"type":3,"srcsk":"cs","src":40,"dessk":"gs10001","session":20,"des":44},"data":{"result":{"gs10001":{"server_grade":45,"heartbeat":1775922181},"whitelist":{}}}}
+[:04-11_15-43-10][:00000013] router服务端 网络消息 服务=router_s iCmd=101 fd=10.0 mData={"record":{"cmd":"CSGetOpenStatus","srcsk":"cs","src":40,"module":"common","dessk":"gs10001","type":1,"des":".login"},"data":{}}
+^C
+[root@02100a255bf7 code]# 
