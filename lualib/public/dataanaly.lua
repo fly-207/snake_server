@@ -1,3 +1,7 @@
+---@module "public.dataanaly"
+--- 数据分析模块
+--- 提供数据分析日志的记录功能，支持基础日志和MTBI日志
+
 local skynet = require "skynet"
 local interactive = require "base.interactive"
 local res = require "base.res"
@@ -6,15 +10,23 @@ local gdefines = import(lualib_path("public.gamedefines"))
 local serverinfo = import(lualib_path("public.serverinfo"))
 local channelinfo = import(lualib_path("public.channelinfo"))
 
+---@type table<string, file*> 文件句柄缓存
 mFileFd = {}
+---@type table<string, string> 文件路径缓存
 mFilePath = {}
 
+---@type table<string, file*> MTBI文件句柄缓存
 mMtbiFileFd = {}
+---@type table<string, string> MTBI文件路径缓存
 mMtbiFilePath = {}
 
+---@type integer? 基础日志状态
 local LOG_BASE_STAUTS = nil
+---@type integer? MTBI日志状态
 local LOG_MTBI_STAUTS = nil
 
+--- 检查是否开启基础日志
+---@return boolean
 is_log_base = function () 
     if is_production_env() then
         return true
@@ -34,6 +46,8 @@ is_log_base = function ()
     return LOG_BASE_STAUTS == 1
 end
 
+--- 检查是否开启MTBI日志
+---@return boolean
 is_log_mtbi = function ()
     if is_production_env() then
         return true
@@ -53,12 +67,18 @@ is_log_mtbi = function ()
     return LOG_MTBI_STAUTS == 1
 end
 
+--- 记录数据分析日志
+---@param sName string 日志名称
+---@param mData table 日志数据
 function log_data(sName, mData)
     if not is_log_base() then return end
 
     interactive.Send(".logfile", "common", "WriteData",  {sName = sName, data = mData})
 end
 
+--- 记录MTBI日志
+---@param sName string 日志名称
+---@param mData table 日志数据
 function log_mtbi(sName, mData)
     if serverinfo.is_h7d_server() then return end
 
@@ -67,6 +87,9 @@ function log_mtbi(sName, mData)
     interactive.Send(".logfile", "common", "WriteMtbi",  {sName = sName, data = mData}) 
 end
 
+--- 写入数据到文件
+---@param sName string 文件名
+---@param sData string 数据内容
 function write_data(sName, sData)
     local sPath = LOG_BASE_PATH
     local sServerPath = string.format("%s/%s", sPath, MY_SERVER_KEY)
@@ -87,6 +110,9 @@ function write_data(sName, sData)
     end
 end
 
+--- 写入MTBI日志到文件
+---@param sType string 日志类型
+---@param mData table 日志数据
 function write_mtbi(sType, mData)
     if serverinfo.is_h7d_server() then return end
         
@@ -139,6 +165,9 @@ function write_mtbi(sType, mData)
     end
 end
 
+--- 将表转换为key+value&key+value格式
+---@param m? table 要转换的表
+---@return string
 function table_concat(m)
     local s = ""
     for key, val in pairs(m or {}) do
@@ -149,6 +178,9 @@ function table_concat(m)
     return s
 end
 
+--- 将表转换为key&value,key&value格式(MTBI用)
+---@param m? table 要转换的表
+---@return string
 function table_mtbi_concat(m)
     local s = ""
     for key, val in pairs(m or {}) do
@@ -159,6 +191,10 @@ function table_mtbi_concat(m)
     return s
 end
 
+--- 获取MTBI渠道编码
+---@param iChannel integer 原始渠道ID
+---@param sType string 日志类型
+---@return integer MTBI渠道编码
 function GetMtbiChannel(iChannel, sType)
     if iChannel == 1048 then return 211 end
     if iChannel == 0 then return iChannel end
@@ -172,6 +208,9 @@ function GetMtbiChannel(iChannel, sType)
     return mChannel["channel"]
 end
 
+--- 获取MTBI平台编码
+---@param iPlatform integer 平台ID
+---@return integer MTBI平台编码
 function GetMtbiPlatform(iPlatform)
     if table_in_list({gdefines.PLATFORM.ios, gdefines.PLATFORM.rootios}, iPlatform) then
         -- ios

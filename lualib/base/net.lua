@@ -1,3 +1,6 @@
+---@module "base.net"
+--- 网络通信模块
+--- 提供客户端与服务器之间的网络协议处理，支持protobuf编解码
 
 local skynet = require "skynet"
 local netpack = require "netpack"
@@ -8,13 +11,27 @@ local bigpacket = import(lualib_path("public.bigpacket"))
 local cjson = require "cjson"
 local unpack = table.unpack
 
+---@class NetModule 网络模块
+---@field PushMerge fun(iAddr: integer, lNet?: table[]) 推送合并消息
+---@field DispatchProxy fun(netcmd: table) 代理分发
+---@field Dispatch fun(netcmd: table) 消息分发
+---@field PackData fun(sMessage: string, mData: table): string 打包数据
+---@field PackMergeData fun(sMessage: string, mData: table): string 打包合并数据
+---@field Send fun(mMailBox: table, sMessage: string, mData: table) 发送消息
+---@field Mask fun(sMessage: string, mData: table): table 消息掩码
+---@field UnMask fun(sMessage: string, mData: table): table 消息解掩码
 local M = {}
 
+--- 推送合并消息
+---@param iAddr integer 目标地址
+---@param lNet? table[] 消息列表
 function M.PushMerge(iAddr, lNet)
     lNet = lNet or {}
     skynet.send(iAddr, "zinc_client_merge", lNet)
 end
 
+--- 代理模式的消息分发
+---@param netcmd table 网络命令处理器
 function M.DispatchProxy(netcmd)
     skynet.register_protocol {
         name = "zinc_client_merge",
@@ -38,6 +55,8 @@ function M.DispatchProxy(netcmd)
     }
 end
 
+--- 消息分发处理
+---@param netcmd table 网络命令处理器
 function M.Dispatch(netcmd)
     skynet.register_protocol {
         name = "zinc",

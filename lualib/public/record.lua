@@ -1,9 +1,27 @@
+---@module "public.record"
+--- 日志记录模块
+--- 提供统一的日志记录接口，支持数据库日志和文件日志
 
 local skynet = require "skynet"
 local interactive = require "base.interactive"
 
+---@class RecordModule 日志记录模块
+---@field check_log_db fun(sType: string, sSubType: string, mLog: table) 检查日志格式
+---@field log_db fun(sType: string, sSubType: string, mLog: table) 记录到数据库
+---@field log_unmovedb fun(sType: string, sSubType: string, mLog: table) 记录到不迁移数据库
+---@field log_file fun(sSubType: string, sMsg: string, ...: any) 记录到文件
+---@field user fun(sType: string, sSubType: string, mLog: table) 记录用户日志
+---@field unmove fun(sType: string, sSubType: string, mLog: table) 记录不迁移日志
+---@field error fun(sMsg: string, ...: any) 记录错误日志
+---@field info fun(sMsg: string, ...: any) 记录信息日志
+---@field warning fun(sMsg: string, ...: any) 记录警告日志
+---@field debug fun(sMsg: string, ...: any) 记录调试日志
 local M = {}
 
+--- 检查日志格式是否符合导表配置
+---@param sType string 日志类型
+---@param sSubType string 日志子类型
+---@param mLog table 日志数据
 function M.check_log_db(sType, sSubType, mLog)
     local res = require "base.res"
     local mFormat = table_get_depth(res, {"daobiao", "log", sType, sSubType, "log_format"})

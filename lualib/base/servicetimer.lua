@@ -1,5 +1,6 @@
--- 定时器服务模块
--- 提供基于 skynet 的定时器功能，支持添加、删除定时回调
+---@module "base.servicetimer"
+--- 定时器服务模块
+--- 提供基于 skynet 的定时器功能，支持添加、删除定时回调
 
 --[[
     整个模块的核心功能是 DriverFunc, 该函数使用 skynet.timeout
@@ -19,22 +20,29 @@ local skynet = require "skynet"
 local ltimer = require "ltimer"
 local rt_monitor = require "base.rt_monitor"
 
+---@class ServiceTimerModule 定时器模块
+---@field Init fun() 初始化
+---@field NewTimer fun(): CTimer 创建定时器
 local M = {}
-local iTestOverflow = 0  -- 用于测试时间溢出的变量
+
+---@type integer 用于测试时间溢出的变量
+local iTestOverflow = 0
 
 local tremove = table.remove
 local tinsert = table.insert
 local mmax = math.max
 local mfloor = math.floor
 
-local oTimerMgr  -- 全局定时器管理器实例
+---@type CTimerMgr 全局定时器管理器实例
+local oTimerMgr
 
--- 调试用的堆栈跟踪函数
+--- 调试用的堆栈跟踪函数
+---@param sMsg string 消息
 local function Trace(sMsg)
     print(debug.traceback(sMsg))
 end
 
--- 定时器驱动函数，每0.01秒执行一次
+--- 定时器驱动函数，每0.01秒执行一次
 local DriverFunc
 DriverFunc = function ()
     if not oTimerMgr.m_bExecute then
@@ -47,18 +55,20 @@ DriverFunc = function ()
     end
 end
 
--- 单个定时器类
+---@class CTimer 单个定时器类
+---@field m_mName2Id table<string, integer> 名称到ID的映射
 local CTimer = {}
 CTimer.__index = CTimer
 
--- 创建新的定时器实例
+--- 创建新的定时器实例
+---@return CTimer
 function CTimer:New()
     local o = setmetatable({}, self)
     o.m_mName2Id = {}  -- 存储定时器名称到ID的映射
     return o
 end
 
--- 释放定时器资源
+--- 释放定时器资源
 function CTimer:Release()
     for k, v in pairs(self.m_mName2Id) do
         oTimerMgr:DelCallback(v)
@@ -68,10 +78,10 @@ function CTimer:Release()
     release(self)
 end
 
--- 添加定时回调
--- @param sKey: 定时器标识名
--- @param iDelay: 延迟时间(毫秒)
--- @param func: 回调函数
+--- 添加定时回调
+---@param sKey string 定时器标识名
+---@param iDelay integer 延迟时间(毫秒)
+---@param func function 回调函数
 function CTimer:AddCallback(sKey, iDelay, func)
     assert(iDelay>0,string.format("CTimer AddCallback delay error too small %s %s", sKey, iDelay))
     iDelay = mmax(1, mfloor(iDelay/10))
@@ -102,7 +112,8 @@ function CTimer:AddCallback(sKey, iDelay, func)
     end
 end
 
--- 删除定时回调
+--- 删除定时回调
+---@param sKey string 定时器标识名
 function CTimer:DelCallback(sKey)
     local id = self.m_mName2Id[sKey]
     if id then
@@ -111,7 +122,9 @@ function CTimer:DelCallback(sKey)
     end
 end
 
--- 获取定时回调
+--- 获取定时回调
+---@param sKey string 定时器标识名
+---@return function? 回调函数
 function CTimer:GetCallback(sKey)
     local id = self.m_mName2Id[sKey]
     if not id then
@@ -120,11 +133,18 @@ function CTimer:GetCallback(sKey)
     return oTimerMgr:GetCallback(id)
 end
 
--- 定时器管理器类
+---@class CTimerMgr 定时器管理器类
+---@field m_lCbHandles integer[] 回调句柄列表
+---@field m_iCbDispatchId integer 回调分发ID
+---@field m_bExecute boolean 执行状态标志
+---@field m_mCbUsedId table<integer, function> 已使用的回调ID映射
+---@field m_lCbReUseId integer[] 可重用的回调ID列表
+---@field m_oCobj userdata 时间轮C对象
 local CTimerMgr = {}
 CTimerMgr.__index = CTimerMgr
 
--- 创建新的定时器管理器实例
+--- 创建新的定时器管理器实例
+---@return CTimerMgr
 function CTimerMgr:New()
     local o = setmetatable({}, self)
 
@@ -141,47 +161,52 @@ function CTimerMgr:New()
     return o
 end
 
--- 释放定时器管理器资源
+--- 释放定时器管理器资源
 function CTimerMgr:Release()
     release(self)
 end
 
--- 初始化定时器管理器
+--- 初始化定时器管理器
 function CTimerMgr:Init()
     skynet.timeout(1, DriverFunc)
 end
 
--- 刷新服务启动时间
+--- 刷新服务启动时间
 function CTimerMgr:FlushStart()
     self.m_iServiceStartTime = skynet.starttime()
 end
 
--- 刷新当前时间
+--- 刷新当前时间
 function CTimerMgr:FlushNow()
     self.m_iServiceNow = skynet.now()
 end
 
--- 获取服务时间
+--- 获取服务时间
+---@return integer 服务时间
 function CTimerMgr:GetTime()
     return self.m_iServiceStartTime*100+self.m_iServiceNow+iTestOverflow
 end
 
--- 获取当前时间
+--- 获取当前时间
+---@return integer 当前时间
 function CTimerMgr:GetNow()
     return self.m_iServiceNow
 end
 
--- 获取服务启动时间
+--- 获取服务启动时间
+---@return integer 启动时间
 function CTimerMgr:GetStartTime()
     return self.m_iServiceStartTime
 end
 
--- 创建新的定时器
+--- 创建新的定时器
+---@return CTimer
 function CTimerMgr:NewTimer()
     return CTimer:New()
 end
 
--- 获取新的回调分发ID
+--- 获取新的回调分发ID
+---@return integer 回调ID
 function CTimerMgr:GetCbDispatchId()
     local l = self.m_lCbReUseId
     local id = tremove(l, #l)
@@ -192,7 +217,10 @@ function CTimerMgr:GetCbDispatchId()
     return self.m_iCbDispatchId
 end
 
--- 添加回调
+--- 添加回调
+---@param iDelay integer 延迟时间
+---@param func function 回调函数
+---@return integer 回调ID
 function CTimerMgr:AddCallback(iDelay, func)
     local iCbId = self:GetCbDispatchId()
     self.m_mCbUsedId[iCbId] = func
@@ -200,12 +228,15 @@ function CTimerMgr:AddCallback(iDelay, func)
     return iCbId
 end
 
--- 删除回调
+--- 删除回调
+---@param iId integer 回调ID
 function CTimerMgr:DelCallback(iCbId)
     self.m_mCbUsedId[iCbId] = nil
 end
 
--- 获取回调函数
+--- 获取回调函数
+---@param iId integer 回调ID
+---@return function? 回调函数
 function CTimerMgr:GetCallback(iCbId)
     return self.m_mCbUsedId[iCbId]
 end
@@ -231,7 +262,8 @@ function M.Init()
     end
 end
 
--- 创建新的定时器
+--- 创建新的定时器
+---@return CTimer
 function M.NewTimer()
     return oTimerMgr:NewTimer()
 end

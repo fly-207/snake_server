@@ -1,33 +1,44 @@
--- 交互通信模块
--- 用于处理服务之间的消息传递，支持发送消息、请求-响应模式
+---@module "base.interactive"
+--- 交互通信模块
+--- 用于处理服务之间的消息传递，支持发送消息、请求-响应模式
 local skynet = require "skynet"
 local extype = require "base.extype"
 local rt_monitor = require "base.rt_monitor"
 
+---@class InteractiveModule 交互通信模块
+---@field Init fun(bOpen?: boolean) 初始化模块
+---@field Send fun(sAddr: string, sModule: string, sCmd: string, mData?: table) 发送消息
+---@field Request fun(sAddr: string, sModule: string, sCmd: string, mData?: table, fCallback?: function) 请求消息
+---@field Response fun(iAddr: integer, iNo: integer, mData?: table) 响应消息
 local M = {}
 
--- 是否开启消息合并模式
+--- 是否开启消息合并模式
 local bOpenMerge = false
 
 local tinsert = table.insert
 
--- 消息类型定义
-local SEND_TYPE = 1    -- 发送类型：单向消息
-local REQUEST_TYPE = 2 -- 请求类型：需要响应的请求
-local RESPONSE_TYPE = 3 -- 响应类型：对请求的响应
+--- 消息类型定义
+---@type integer 发送类型：单向消息
+local SEND_TYPE = 1
+---@type integer 请求类型：需要响应的请求
+local REQUEST_TYPE = 2
+---@type integer 响应类型：对请求的响应
+local RESPONSE_TYPE = 3
 
--- 存储回调函数和调试信息的表
-local mNote = {}  -- 存储请求的回调函数
-local mDebug = {} -- 存储请求的调试信息
-local mQueue = {} -- 消息队列，用于消息合并模式
-local iSessionIdx = 0 -- 会话ID计数器
+--- 存储回调函数和调试信息的表
+---@type table<integer, function> 存储请求的回调函数
+local mNote = {}
+---@type table<integer, table> 存储请求的调试信息
+local mDebug = {}
+---@type table<integer, table[]> 消息队列，用于消息合并模式
+local mQueue = {}
+---@type integer 会话ID计数器
+local iSessionIdx = 0
 
--- 处理单条命令的核心函数
--- @param moduleLogic: 模块逻辑处理函数
--- @param mRecord: 消息记录 
--- {source = MY_ADDR, module = sModule, cmd = sCmd, session = iNo, type = REQUEST_TYPE}
--- {source = MY_ADDR, session = iNo, type = RESPONSE_TYPE}
--- @param mData: 消息数据
+--- 处理单条命令的核心函数
+---@param moduleLogic table 模块逻辑处理对象
+---@param mRecord table 消息记录
+---@param mData table 消息数据
 local function HandleSingleCmd(moduleLogic, mRecord, mData)
     local iType = mRecord.type
     if iType == RESPONSE_TYPE then
@@ -80,8 +91,8 @@ local function HandleSingleCmd(moduleLogic, mRecord, mData)
     end
 end
 
--- 初始化交互模块
--- @param bOpen: 是否开启消息合并模式
+--- 初始化交互模块
+---@param bOpen? boolean 是否开启消息合并模式
 function M.Init(bOpen)
     if bOpen then
         bOpenMerge = true
@@ -90,10 +101,10 @@ function M.Init(bOpen)
     end
 end
 
--- 将消息推入队列
--- @param sAddr: 目标地址
--- @param mArgs: 消息参数
--- @param mData: 消息数据
+--- 将消息推入队列
+---@param sAddr string 目标地址
+---@param mArgs table 消息参数
+---@param mData table 消息数据
 function M.PushQueue(sAddr, mArgs, mData)
     local iAddr = skynet.servicekey(sAddr)
     if iAddr then

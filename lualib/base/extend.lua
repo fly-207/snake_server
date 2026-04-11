@@ -1,3 +1,7 @@
+---@module "base.extend"
+--- 扩展工具模块
+--- 提供表、IO、字符串、数组、Protobuf、随机、队列等工具函数
+
 local print = print
 local tconcat = table.concat
 local tinsert = table.insert
@@ -10,6 +14,15 @@ local tostring = tostring
 local next = next
 local unpack = unpack
 
+---@class ExtendModule 扩展工具模块
+---@field Table TableExtend 表操作扩展
+---@field Io IoExtend IO操作扩展
+---@field String StringExtend 字符串操作扩展
+---@field Array ArrayExtend 数组操作扩展
+---@field Protobuf ProtobufExtend Protobuf操作扩展
+---@field Random RandomExtend 随机操作扩展
+---@field Queue QueueExtend 队列操作扩展
+---@field Misc MiscExtend 杂项操作扩展
 local extend = {
     Table = {},
     Io = {},
@@ -23,6 +36,9 @@ local extend = {
 
 ----------------------------------------
 -- Table
+--- 获取表元素数量
+---@param T table 表
+---@return integer 元素数量
 function extend.Table.size(T)
     local i = 0
     for _, _ in pairs(T) do
@@ -31,6 +47,11 @@ function extend.Table.size(T)
     return i
 end
 
+--- 在表中查找元素
+---@param T table 表
+---@param x any 要查找的元素
+---@return any? key 找到的键
+---@return any? value 找到的值
 function extend.Table.find(T, x)
     for k, v in pairs(T) do
         if v == x then
@@ -39,6 +60,9 @@ function extend.Table.find(T, x)
     end
 end
 
+--- 获取表的所有键
+---@param T table 表
+---@return any[] 键列表
 function extend.Table.keys(T)
     local out = {}
     for k, _ in pairs(T) do
@@ -47,6 +71,9 @@ function extend.Table.keys(T)
     return out
 end
 
+--- 获取表的所有值
+---@param T table 表
+---@return any[] 值列表
 function extend.Table.values(T)
     local out = {}
     for _, v in pairs(T) do
@@ -55,6 +82,9 @@ function extend.Table.values(T)
     return out
 end
 
+--- 将列表转换为映射表
+---@param T any[] 列表
+---@return table<any, any> 映射表
 function extend.Table.list2map(T)
     local out = {}
     for _, v in ipairs(T) do
@@ -63,6 +93,10 @@ function extend.Table.list2map(T)
     return out
 end
 
+--- 组合两个列表为键值对
+---@param lKeyList any[] 键列表
+---@param lValueList any[] 值列表
+---@return table<any, any> 组合后的映射表
 function extend.Table.list_combine_map(lKeyList, lValueList)
     local out = {}
     for idx, k in ipairs(lKeyList) do
@@ -76,6 +110,10 @@ function extend.Table.list_combine_map(lKeyList, lValueList)
     return out
 end
 
+--- 对表中每个元素执行函数
+---@param T table 表
+---@param F function 处理函数
+---@return any[] 结果列表
 function extend.Table.foreach(T, F)
     local out = {}
     for k, v in pairs(T) do
@@ -84,6 +122,11 @@ function extend.Table.foreach(T, F)
     return out
 end
 
+--- 获取表中的值，不存在则设置默认值
+---@param T table 表
+---@param key any 键
+---@param default any 默认值
+---@return any 值
 function extend.Table.get_default(T, key, default)
     local t = T[key]
     if not t then
@@ -93,6 +136,9 @@ function extend.Table.get_default(T, key, default)
     return t
 end
 
+--- 浅拷贝表
+---@param T table 原表
+---@return table 拷贝后的表
 function extend.Table.clone(T)
     local out = {}
     for k, v in pairs(T) do

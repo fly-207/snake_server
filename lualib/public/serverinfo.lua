@@ -1,8 +1,21 @@
+---@module "public.serverinfo"
+--- 服务器信息模块
+--- 提供服务器集群配置信息，包括CS/GS/BS/KS服务器的IP、端口、数据库等
+
 --import module
 local skynet = require "skynet"
 local serverdefines = require "public.serverdefines"
 
 local serverdesc = import(lualib_path("public.serverdesc"))
+
+---@type boolean 是否为生产环境
+---@type table CS服务器信息
+---@type table BS服务器信息
+---@type string 路由IP地址
+---@type table<string, table> GS服务器信息表
+---@type string 外部服务地址
+---@type table DemiSDK配置
+---@type table<string, table> KS服务器信息表
 
 if get_server_cluster() == "dev" then
     IS_PRODUCTION_ENV = false
@@ -175,22 +188,33 @@ else
     assert(false, string.format("wrong server cluster %s", get_server_cluster()))
 end
 
+--- 获取CS服务器IP
+---@return string CS服务器IP
 function get_cs_host()
     return CS_INFO["ip"]
 end
 
+--- 获取CS服务器域名
+---@return string CS服务器域名
 function get_cs_domain()
     return CS_INFO["domain"]
 end
 
+--- 获取路由服务器IP
+---@return string 路由IP
 function get_router_host()
     return ROUTER_IP
 end
 
+--- 获取外部服务地址
+---@return string 外部服务地址
 function get_out_host()
     return OUT_HOST
 end
 
+--- 获取GS服务器Web地址
+---@param serverkey string 服务器标识
+---@return string? GS服务器Web地址
 function get_gs_host(serverkey)
     if not GS_INFO[serverkey] then
         return
@@ -198,6 +222,8 @@ function get_gs_host(serverkey)
     return string.format("%s:%d",GS_INFO[serverkey]["http_host"],GS_WEB_PORT)
 end
 
+--- 获取本地数据库配置
+---@return table 数据库配置表
 function get_local_dbs()
     local host = "127.0.0.1"
     if is_cs_server() then
@@ -219,6 +245,8 @@ function get_local_dbs()
     }
 end
 
+--- 获取CS从库配置
+---@return table 数据库配置表
 function get_cs_slave_dbs()
     local sUser = MONGO_USER
     local sPwd = MONGO_PWD
@@ -230,6 +258,9 @@ function get_cs_slave_dbs()
     }
 end
 
+--- 获取从库配置
+---@param serverkeys? string[] 服务器标识列表
+---@return table<string, table> 数据库配置表
 function get_slave_dbs(serverkeys)
     serverkeys = serverkeys or list_combine(get_gs_key_list(), get_ks_key_list())
     local sUser = MONGO_USER
@@ -252,10 +283,14 @@ function get_slave_dbs(serverkeys)
     return ret
 end
 
+--- 获取GS服务器标识列表
+---@return string[] GS服务器标识列表
 function get_gs_key_list()
     return table_key_list(GS_INFO)
 end
 
+--- 获取GS服务器标签列表
+---@return string[] GS服务器标签列表
 function get_gs_tag_list()
     local gs_list = {}
     for key, _ in pairs(GS_INFO) do
@@ -264,10 +299,16 @@ function get_gs_tag_list()
     return gs_list
 end
 
+--- 获取GS服务器信息
+---@param serverkey string 服务器标识
+---@return table? GS服务器信息
 function get_gs_info(serverkey)
     return GS_INFO[serverkey]
 end
 
+--- 获取服务器名称
+---@param serverkey? string 服务器标识
+---@return string? 服务器名称
 function get_server_name(serverkey)
     serverkey = serverkey or get_server_key()
     local info = GS_INFO[serverkey]
@@ -277,14 +318,22 @@ function get_server_name(serverkey)
     return info.name
 end
 
+--- 获取KS服务器标识列表
+---@return string[] KS服务器标识列表
 function get_ks_key_list()
     return table_key_list(KS_INFO or {})
 end
 
+--- 获取KS服务器信息
+---@param serverkey string 服务器标识
+---@return table? KS服务器信息
 function get_ks_info(serverkey)
     if KS_INFO then return KS_INFO[serverkey] end
 end
 
+--- 获取KS服务器客户端地址
+---@param serverkey? string 服务器标识
+---@return string? KS服务器客户端地址
 function get_ks_host(serverkey)
     serverkey = serverkey or get_server_key()
     local mInfo = KS_INFO[serverkey]
@@ -293,6 +342,9 @@ function get_ks_host(serverkey)
     return mInfo.client_host
 end
 
+--- 获取客户端连接地址
+---@param serverkey? string 服务器标识
+---@return string? 客户端地址
 function get_client_host(serverkey)
     serverkey = serverkey or get_server_key()
     local info = GS_INFO[serverkey]
@@ -302,6 +354,8 @@ function get_client_host(serverkey)
     return info.client_host
 end
 
+--- H7D服务器集群列表
+---@type table<string, integer>
 local h7d_server = {
     devd = 1,
     h7diosshenhe = 1,
@@ -312,12 +366,18 @@ local h7d_server = {
     h7dmerger = 1,
 }
 
+--- 检查是否为H7D服务器
+---@param serverkey? string 服务器标识
+---@return boolean 是否为H7D服务器
 function is_h7d_server(serverkey)
     serverkey = serverkey or get_server_key()
     local server_cluster = get_server_cluster(serverkey)
     return h7d_server[server_cluster] and true or false
 end
 
+--- 检查是否为H7D合服服务器
+---@param serverkey? string 服务器标识
+---@return boolean 是否为合服服务器
 function is_h7d_merger(serverkey)
     serverkey = serverkey or get_server_key()
     local server_cluster = get_server_cluster(serverkey)

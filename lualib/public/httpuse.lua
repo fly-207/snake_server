@@ -1,9 +1,23 @@
+---@module "public.httpuse"
+--- HTTP请求工具模块
+--- 提供HTTP请求封装、URL编码解码、JSON/KV数据转换等功能
 
 local skynet = require "skynet"
 local cjson = require "cjson"
 local interactive = require "base.interactive"
 local record = require "public.record"
 
+---@class HttpuseModule HTTP请求工具模块
+---@field request fun(method: string, host: string, url: string, content: string, func?: function, header?: table) 通用HTTP请求
+---@field get fun(host: string, url: string, content: string, func?: function, header?: table) GET请求
+---@field post fun(host: string, url: string, content: string, func?: function, header?: table) POST请求
+---@field mkcontent_json fun(m: table): string 将表转换为JSON字符串
+---@field mkcontent_kv fun(m: table): string 将表转换为KV格式字符串
+---@field content_json fun(s: string): table 解析JSON字符串
+---@field content_kv fun(s: string): table 解析KV格式字符串
+---@field mkurl fun(url: string, param: table): string 生成带参数的URL
+---@field urlencode fun(s: string): string URL编码
+---@field urldecode fun(s: string): string URL解码
 local M = {}
 
 local function escape(s)

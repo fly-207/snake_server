@@ -1,10 +1,18 @@
+---@module commonop
+---通用操作工具模块
+---提供服务器信息获取、文件加载、打印等常用全局函数
 
 local skynet = require "skynet"
 
+---获取服务器Key
+---@return string key 服务器Key (如 "s1_gs1")
 get_server_key = function ()
     return MY_SERVER_KEY
 end
 
+---获取服务器集群名
+---@param server_key string|nil 服务器Key，默认当前服务器
+---@return string cluster 集群名
 get_server_cluster = function (server_key)
     if not server_key then
         return MY_SERVER_CLUSTER
@@ -12,6 +20,9 @@ get_server_cluster = function (server_key)
     return string.match(server_key, "(%w+)_%w+")
 end
 
+---获取服务器标签
+---@param server_key string|nil 服务器Key，默认当前服务器
+---@return string tag 服务器标签
 get_server_tag = function (server_key)
     if not server_key then
         return MY_SERVER_TAG
@@ -19,6 +30,9 @@ get_server_tag = function (server_key)
     return string.match(server_key, "%w+_(%w+)")
 end
 
+---获取服务器类型
+---@param server_key string|nil 服务器Key，默认当前服务器
+---@return string type 服务器类型 (如 "gs", "cs")
 get_server_type = function (server_key)
     if not server_key then
         return MY_SERVER_TYPE
@@ -26,6 +40,9 @@ get_server_type = function (server_key)
     return string.match(server_key, "%w+_(%a+)%d*")
 end
 
+---获取服务器ID
+---@param server_key string|nil 服务器Key，默认当前服务器
+---@return integer|nil id 服务器ID
 get_server_id = function (server_key)
     if not server_key then
         return MY_SERVER_ID
@@ -33,6 +50,9 @@ get_server_id = function (server_key)
     return tonumber(string.match(server_key, "%w+_%a+(%d*)"))
 end
 
+---根据服务器标签生成完整的服务器Key
+---@param server_tag string 服务器标签
+---@return string key 完整的服务器Key
 make_server_key = function (server_tag)
     assert(server_tag, "make server key error: no server tag")
     return get_server_cluster().."_"..server_tag
@@ -41,6 +61,11 @@ end
 local floor = math.floor
 local random = math.random
 
+---扩展的loadfile函数
+---@param sFileName string 文件名
+---@param sMode string|nil 加载模式，默认"bt"
+---@param mEnv table|nil 环境表，默认_ENV
+---@return function f 加载的函数
 loadfile_ex = function (sFileName, sMode, mEnv)
     sMode = sMode or "bt"
     mEnv = mEnv or _ENV
@@ -53,6 +78,8 @@ loadfile_ex = function (sFileName, sMode, mEnv)
     return f
 end
 
+---增强的打印函数，支持表的序列化输出
+---@param ... any 要打印的参数
 print = function ( ... )
     local lInfo = table.pack(...)
     local lResult = {}
@@ -68,15 +95,21 @@ print = function ( ... )
     skynet.error(table.unpack(lResult))
 end
 
+---检查是否为生产环境
+---@return boolean isProd 是否为生产环境
 is_production_env = function ()
     local serverinfo = import(lualib_path("public.serverinfo"))
     return serverinfo.IS_PRODUCTION_ENV
 end
 
+---检查是否开启自动性能测量
+---@return boolean isOpen 是否开启
 is_auto_open_measure = function ()
     return IS_AUTO_OPEN_MEASURE ~= 0
 end
 
+---检查是否开启基础对象自动跟踪
+---@return boolean isOpen 是否开启
 is_auto_track_baseobject = function ()
     return IS_AUTO_TRACK_BASEOBJECT ~= 0
 end

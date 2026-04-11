@@ -1,9 +1,14 @@
--- 定义一个模块管理器Ms
+---@module reload
+---模块热加载模块
+---提供 Lua 模块的导入和热重载功能
+---支持模块缓存和安全的热更新机制
+
+---@type table<string, table> 模块缓存表，存储已导入的模块
 local Ms = {}
 
--- 导入模块函数，用于加载并缓存模块
--- @param sModule 字符串，表示要导入的模块路径，可以使用斜杠或点分隔
--- @return 返回导入的模块，如果模块已存在则直接返回
+---导入模块函数，用于加载并缓存模块
+---@param sModule string 模块路径，可以使用斜杠或点分隔
+---@return table|nil module 导入的模块表，如果加载失败则返回nil
 function import(sModule)
     -- 将模块路径中的斜杠替换为点，以符合Lua模块命名规范
     local sKey = string.gsub(sModule, "/", ".")
@@ -27,8 +32,9 @@ function import(sModule)
     return Ms[sKey]
 end
 
--- 重新加载模块函数，用于更新已导入的模块
--- @param sModule 字符串，表示要重新加载的模块路径
+---重新加载模块函数，用于更新已导入的模块
+---支持安全的热更新，失败时自动回滚
+---@param sModule string 模块路径
 function reload(sModule)
     -- 将模块路径中的斜杠替换为点
     local sKey = string.gsub(sModule, "/", ".")

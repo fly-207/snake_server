@@ -1,4 +1,9 @@
 
+---@module "base.crypt.algo.des"
+--- DES加密模块(纯Lua实现)
+--- Data Encryption Standard (DES) 对称加密算法的Lua实现
+--- 包含初始置换、轮函数、密钥调度、最终置换等完整DES流程
+
 local array = require("base.crypt.common.array")
 local bit = require("base.crypt.common.bit")
 local math = require("math")
@@ -296,10 +301,22 @@ local mix = function(LR,key)
 	return FRK;
 end
 
+---@alias Bit integer 0或1的位值
+---@alias BitArray Bit[] 位数组
+
+---@class DES_Lua DES加密模块(Lua实现)
+---@field BLOCK_SIZE integer DES块大小(8字节)
+---@field encrypt fun(keyBlock: integer[], inputBlock: integer[]): integer[] 加密函数
+---@field decrypt fun(keyBlock: integer[], inputBlock: integer[]): integer[] 解密函数
 local DES = {};
 
+--- DES块大小(8字节)
 DES.BLOCK_SIZE = 8;
 
+--- DES加密
+---@param keyBlock integer[] 8字节密钥数组
+---@param inputBlock integer[] 8字节输入数据数组
+---@return integer[] 8字节加密结果数组
 DES.encrypt = function(keyBlock,inputBlock)
 
 	local LR = unpackBytes(inputBlock);
@@ -401,6 +418,10 @@ DES.encrypt = function(keyBlock,inputBlock)
 	return outputBlock;
 end
 
+--- DES解密
+---@param keyBlock integer[] 8字节密钥数组
+---@param inputBlock integer[] 8字节加密数据数组
+---@return integer[] 8字节解密结果数组
 DES.decrypt = function(keyBlock,inputBlock)
 
 

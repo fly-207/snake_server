@@ -1,3 +1,7 @@
+---@module "public.util"
+--- 实用工具模块
+--- 提供文本处理、字符串格式化等功能
+
 --import module
 local res = require "base.res"
 local gamedefines = import(lualib_path("public.gamedefines"))
@@ -5,6 +9,10 @@ local gamedefines = import(lualib_path("public.gamedefines"))
 local string = string
 local string_gsub = string.gsub
 
+--- 获取选项文本
+---@param iText integer 文本ID
+---@param tUrl string[] 文本路径
+---@return string 文本内容
 function GetChooseText(iText, tUrl)
     local mData = res["daobiao"]
     for _,v in ipairs(tUrl) do
@@ -14,6 +22,10 @@ function GetChooseText(iText, tUrl)
     return sText
 end
 
+--- 获取文本数据
+---@param iText integer 文本ID
+---@param tUrl? string[] 文本路径，默认为{"text"}
+---@return string|table, table? 文本内容或回调数据, 可选参数
 function GetTextData(iText, tUrl)
     -- params  tUrl: {"huodong", "fengyao"}
     -- params  iText: 1001
@@ -66,6 +78,11 @@ function GetTextData(iText, tUrl)
     end
 end
 
+--- 格式化字符串，替换占位符
+---@param sText string 原始文本
+---@param mReplace? table<string, string|number|table> 替换映射
+---@param bColor? boolean 是否应用颜色
+---@return string 格式化后的文本
 function FormatString(sText, mReplace, bColor)
     assert(type(sText)=="string", "FormatColorString, sText must be string")
 

@@ -1,14 +1,30 @@
+---@module "base.crypt.pattern.cbc"
+--- CBC模式加密模块
+--- 实现密码块链接(Cipher Block Chaining)模式，支持任意块加密算法
 
 local array = require("base.crypt.common.array")
 
 local tinsert = table.insert
 local tremove = table.remove
 
+---@class CBCModule
+---@field Create fun(mAgol: table, mPadding: table, sKey: string, sV?: string): CBCObject 创建CBC加密对象
 local M = {}
 
+---@class CBCObject CBC加密对象
+---@field m_sKey string 加密密钥
+---@field m_sV string 初始化向量(IV)
+---@field m_mAgol table 块加密算法模块
+---@field m_mPadding table 填充模块
 local CObject = {}
 CObject.__index = CObject
 
+--- 创建CBC加密对象
+---@param mAgol table 块加密算法模块(如DES)
+---@param mPadding table 填充模块(如PKCS5)
+---@param sKey string 密钥
+---@param sV? string 初始化向量，默认为密钥
+---@return CBCObject
 function CObject:New(mAgol, mPadding, sKey, sV)
     	local o = setmetatable({}, self)
     	o.m_sKey = sKey
@@ -20,6 +36,9 @@ function CObject:New(mAgol, mPadding, sKey, sV)
     	return o
 end
 
+--- CBC模式加密
+---@param s string 明文数据
+---@return string 加密后的数据
 function CObject:Encode(s)
 	local lTotal = {}
 
@@ -56,6 +75,9 @@ function CObject:Encode(s)
 	return array.toString(lTotal)
 end
 
+--- CBC模式解密
+---@param s string 加密数据
+---@return string 解密后的明文
 function CObject:Decode(s)
 	local lTotal = {}
 
@@ -92,14 +114,26 @@ function CObject:Decode(s)
 	return self:UnPadding(array.toString(lTotal))
 end
 
+--- 对数据进行填充
+---@param s string 原始数据
+---@return string 填充后的数据
 function CObject:Padding(s)
 	return self.m_mPadding.fill(s, self.m_mAgol.BLOCK_SIZE)
 end
 
+--- 去除数据填充
+---@param s string 带填充的数据
+---@return string 去除填充后的数据
 function CObject:UnPadding(s)
 	return self.m_mPadding.clear(s, self.m_mAgol.BLOCK_SIZE)
 end
 
+--- 创建CBC加密对象的工厂方法
+---@param mAgol table 块加密算法模块
+---@param mPadding table 填充模块
+---@param sKey string 密钥
+---@param sV? string 初始化向量
+---@return CBCObject
 function M.Create(...)
      	return CObject:New(...)
 end

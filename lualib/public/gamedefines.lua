@@ -1,19 +1,40 @@
+---@module "public.gamedefines"
+--- 游戏定义模块
+--- 定义游戏中使用的常量、枚举、错误码等
+
 --import module
 local geometry = require "base.geometry"
 
+--- 场景格子X轴距离
+---@type number
 SCENE_GRID_DIS_X = 10
+--- 场景格子Y轴距离
+---@type number
 SCENE_GRID_DIS_Y = 5
+--- 场景玩家可见范围限制
+---@type number
 SCENE_PLAYER_SEE_LIMIT = 40
 
+--- 服务器等级限制
+---@type integer
 SERVER_GRADE_LIMIT = 100
 
+--- 队列数量
+---@type integer
 QUEUE_CNT = 4000
+--- 最大玩家数
+---@type integer
 MAX_PLAYER_CNT = 6000
 
+--- 是否使用C层属性计算
+---@type boolean
 USE_C_SUM = true
+--- 是否使用新的C层属性计算
+---@type boolean
 USE_NEW_C_SUM = true
 
--- c层同步定义
+--- C层同步定义
+---@enum SUM_DEFINE
 SUM_DEFINE = {
     MO_ATTR_ADD = 0,
     MO_ATTR_BASE_R = 1,
@@ -34,6 +55,8 @@ SUM_DEFINE = {
     MO_FABAO_MGR_R = 16,
 }
 
+--- 错误码定义
+---@enum ERRCODE
 ERRCODE = {
     ok = 0,
     common = 1,
@@ -60,6 +83,8 @@ ERRCODE = {
     not_start_ks = 1019
 }
 
+--- 登录连接状态
+---@enum LOGIN_CONNECTION_STATUS
 LOGIN_CONNECTION_STATUS = {
     no_account = 1,
     in_login_account = 2,
@@ -69,16 +94,22 @@ LOGIN_CONNECTION_STATUS = {
     in_create_role = 6,
 }
 
+--- 游戏渠道定义
+---@type table<string, string>
 GAME_CHANNEL = {
     develop = "pc",        -- 开发版本
 }
 
+--- 发行商定义
+---@enum PUBLISHER
 PUBLISHER = {
     none = 0,    -- 无（全）发行
     czk = 1,    -- 晨之科
     sm = 2,     -- 手盟
 }
 
+--- 平台定义
+---@enum PLATFORM
 PLATFORM = {
     android = 1,
     rootios = 2,
@@ -86,6 +117,8 @@ PLATFORM = {
     pc = 4
 }
 
+--- 平台名称描述
+---@type table<integer, string>
 PLATFORM_DESC = {
     [1] = "ANDROID", -- 安卓
     [2] = "ROOTIOS", -- 越狱ios
@@ -93,6 +126,8 @@ PLATFORM_DESC = {
     [4] = "PC", -- windows
 }
 
+--- 玩家门派定义
+---@enum PLAYER_SCHOOL
 PLAYER_SCHOOL = {
     SHUSHAN = 1,    --蜀山
     JINSHAN = 2,    --金山

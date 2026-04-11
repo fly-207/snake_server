@@ -1,10 +1,24 @@
+---@module "base.mem_rt_monitor"
+--- 实时内存监控模块
+--- 用于跟踪函数调用的内存分配情况
+
 local skynet = require "skynet"
 
+---@class MemRtMonitorModule 实时内存监控模块
+---@field Record fun(key: any[], iMem: number) 记录内存使用
+---@field Start fun() 开始监控
+---@field Stop fun() 停止监控
+---@field IsOpen fun(): boolean 检查是否开启
 local M = {}
 
+---@type table 记录表
 local mRecord = {}
+---@type boolean 是否开启
 local bOpen = false
 
+--- 记录内存使用
+---@param key any[] 监控标识键
+---@param iMem number 内存使用量(KB)
 function M.Record(key,iMem)
     local interactive = require "base.interactive"
     local c2 = collectgarbage("count")
@@ -32,6 +46,7 @@ function M.Record(key,iMem)
     end 
 end
 
+--- 开始实时内存监控
 function M.Start()
     if bOpen then
         M.Stop()
@@ -39,6 +54,7 @@ function M.Start()
     bOpen = true
 end
 
+--- 停止实时内存监控
 function M.Stop()
     if not bOpen then
         return
@@ -46,6 +62,8 @@ function M.Stop()
     bOpen = false
 end
 
+--- 检查实时内存监控是否开启
+---@return boolean 是否开启
 function M.IsOpen()
     if bOpen then
         return true

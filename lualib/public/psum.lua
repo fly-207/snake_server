@@ -1,8 +1,13 @@
+---@module "public.psum"
+--- C层属性计算模块
+--- 提供与C层属性计算模块(lpsum)的交互封装
+
 -- import file
 
 local lpsum = require "lpsum"
 
-
+--- 玩家属性到C层索引的映射
+---@type table<string, integer>
 local PlayerAttr2C = {
     physique = 0,
     strength = 1,
@@ -36,6 +41,9 @@ local PlayerAttr2C = {
     mag_hit_res_ratio = 29,
 }
 
+--- 检查属性是否支持C层计算
+---@param sAttr string 属性名称
+---@return boolean 是否支持
 function IsAttr2C(sAttr)
     if PlayerAttr2C[sAttr] then
         return true
@@ -43,36 +51,50 @@ function IsAttr2C(sAttr)
     return false
 end
 
-
+--- 创建C层属性计算器
+---@return CCSummAttr
 function NewCSumAttr(...)
     return CCSummAttr:New(...)
 end
 
+---@class CCSummAttr C层属性计算器
+---@field m_cSum userdata C层计算对象
 CCSummAttr = {}
 CCSummAttr.__index = CCSummAttr
 inherit(CCSummAttr, logic_base_cls())
 
+--- 创建实例
+---@return CCSummAttr
 function CCSummAttr:New()
     local o = super(CCSummAttr).New(self)
     o.m_cSum = lpsum.lpsum_create()
     return o
 end
 
+--- 释放资源
 function CCSummAttr:Release()
     self.m_cSum = nil
     super(CCSummAttr).Release(self)
 end
 
+--- 检查属性是否支持C层计算
+---@param sAttr string 属性名称
+---@return boolean 是否支持
 function CCSummAttr:IsAttr2C(sAttr)
     return IsAttr2C(sAttr)
 end
 
-
+--- 设置等级
+---@param iGrade integer 等级
 function CCSummAttr:SetGrade(iGrade)
     local oSum = self.m_cSum
     oSum:setgrade(iGrade)
 end
 
+--- 设置属性值
+---@param iMo integer 模块ID
+---@param sAttr string 属性名称
+---@param Val number 属性值
 function CCSummAttr:Set(iMo,sAttr,Val)
     if not self:IsAttr2C(sAttr) then return end
 

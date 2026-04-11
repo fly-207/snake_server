@@ -1,3 +1,6 @@
+---@module "base.router"
+--- 路由通信模块
+--- 提供跨服务器的路由通信功能，支持P2P消息传递
 
 local skynet = require "skynet"
 local netpack = require "netpack"
@@ -5,28 +8,46 @@ local extype = require "base.extype"
 local interactive = require "base.interactive"
 local rt_monitor = require "base.rt_monitor"
 
+---@class RouterModule 路由模块
+---@field Send fun(sServerKey: string, iAddr: string, sModule: string, sCmd: string, mData?: table) 发送消息
+---@field Request fun(sServerKey: string, iAddr: string, sModule: string, sCmd: string, mData?: table, fCallback?: function) 请求消息
+---@field Response fun(sServerKey: string, iAddr: string, iNo: integer, mData?: table) 响应消息
+---@field DispatchR fun(netcmd: table) 路由分发处理
+---@field DispatchC fun(routercmd: table) 客户端分发处理
 local M = {}
 
+--- R2P协议类型
+---@type table<string, integer>
 M.PROTO_R2P = {
     R2PRouter = 101,
     R2PHeartBeat = 102,
     R2PRouterBig = 103,
 }
 
+--- P2R协议类型
+---@type table<string, integer>
 M.PROTO_P2R = {
     P2RRouter = 101,
     P2RHeartBeat = 102,
     P2RRouterBig = 103,
 }
 
+---@type integer 发送类型
 M.SEND_TYPE = 1
+---@type integer 请求类型
 M.REQUEST_TYPE = 2
+---@type integer 响应类型
 M.RESPONSE_TYPE = 3
 
+---@type table<integer, function> 回调函数表
 local mNote = {}
+---@type table<integer, table> 调试信息表
 local mDebug = {}
+---@type integer 会话ID计数器
 local iSessionIdx = 0
 
+--- 获取会话ID
+---@return integer 会话ID
 function M.GetSession()
     iSessionIdx = iSessionIdx + 1
     if iSessionIdx >= 100000000 then
@@ -35,6 +56,12 @@ function M.GetSession()
     return iSessionIdx
 end
 
+--- 发送跨服消息
+---@param sServerKey string 目标服务器标识
+---@param iAddr string 目标服务地址
+---@param sModule string 模块名
+---@param sCmd string 命令名
+---@param mData? table 数据
 function M.Send(sServerKey, iAddr, sModule, sCmd, mData)
     mData = mData or {}
     interactive.Send(".router_c", "common", "ApplySendP2P", {
@@ -43,6 +70,13 @@ function M.Send(sServerKey, iAddr, sModule, sCmd, mData)
     })
 end
 
+--- 请求跨服消息
+---@param sServerKey string 目标服务器标识
+---@param iAddr string 目标服务地址
+---@param sModule string 模块名
+---@param sCmd string 命令名
+---@param mData? table 数据
+---@param fCallback? function 回调函数
 function M.Request(sServerKey, iAddr, sModule, sCmd, mData, fCallback)
     mData = mData or {}
     local iNo  = M.GetSession()
@@ -60,6 +94,11 @@ function M.Request(sServerKey, iAddr, sModule, sCmd, mData, fCallback)
     })
 end
 
+--- 响应跨服消息
+---@param sServerKey string 目标服务器标识
+---@param iAddr string 目标服务地址
+---@param iNo integer 会话ID
+---@param mData? table 数据
 function M.Response(sServerKey, iAddr, iNo, mData)
     mData = mData or {}
     interactive.Send(".router_c", "common", "ApplySendP2P", {
@@ -68,6 +107,8 @@ function M.Response(sServerKey, iAddr, iNo, mData)
     })
 end
 
+--- 路由分发处理
+---@param netcmd table 网络命令处理器
 function M.DispatchR(netcmd)
     skynet.register_protocol {
         name = "zinc",

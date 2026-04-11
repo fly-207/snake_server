@@ -1,3 +1,6 @@
+---@module "base.mongoop"
+--- MongoDB操作模块
+--- 提供MongoDB数据库的增删改查操作封装
 
 local skynet = require "skynet"
 local mongo = require "mongo"
@@ -7,12 +10,22 @@ local MIX_TYPE = 1
 
 local tinsert = table.insert
 
+---@class MongoModule MongoDB操作模块
+---@field NewMongoObj fun(): CMongoObj 创建MongoDB对象
+---@field NewMongoClient fun(mConf: table): userdata 创建MongoDB客户端
+---@field ChangeBeforeSave fun(mData: table) 保存前的数据转换
+---@field ChangeAfterLoad fun(mData: table) 加载后的数据转换
 local M = {}
 
+---@class CMongoObj MongoDB操作对象
+---@field m_sDbName string 数据库名称
+---@field m_oClient userdata MongoDB客户端
 local CMongoObj = {}
 CMongoObj.__index = CMongoObj
 M.CMongoObj = CMongoObj
 
+--- 创建MongoDB操作对象
+---@return CMongoObj
 function CMongoObj:New()
     local o = setmetatable({}, self)
     o.m_sDbName = nil
@@ -20,33 +33,51 @@ function CMongoObj:New()
     return o
 end
 
+--- 释放资源
 function CMongoObj:Release()
     release(self)
 end
 
+--- 初始化MongoDB操作对象
+---@param oClient userdata MongoDB客户端
+---@param sDbName string 数据库名称
 function CMongoObj:Init(oClient, sDbName)
     self.m_oClient = oClient
     self.m_sDbName = sDbName
 end
 
+--- 获取数据库对象
+---@return userdata? 数据库对象
 function CMongoObj:GetDB()
     if self.m_oClient then
         return self.m_oClient[self.m_sDbName]
     end
 end
 
+--- 创建索引
+---@param sTableName string 表名
+---@param ... any 索引参数
 function CMongoObj:CreateIndex(sTableName, ...)
     local t = self:GetDB()[sTableName]
     t:ensureIndex(...)
     return
 end
 
+--- 低优先级插入数据
+---@param sTableName string 表名
+---@param ... any 插入数据
+---@return boolean 是否成功
 function CMongoObj:InsertLowPriority(sTableName, ...)
     local t = self:GetDB()[sTableName]
     t:insert(...)
     return true
 end
 
+--- 插入数据
+---@param sTableName string 表名
+---@param ... any 插入数据
+---@return boolean ok 是否成功
+---@return string? err 错误信息
 function CMongoObj:Insert(sTableName, ...)
     local t = self:GetDB()[sTableName]
     t:insert(...)
@@ -58,6 +89,11 @@ function CMongoObj:Insert(sTableName, ...)
     return ok, r.err
 end
 
+--- 批量插入数据
+---@param sTableName string 表名
+---@param ... any 插入数据
+---@return boolean ok 是否成功
+---@return string? err 错误信息
 function CMongoObj:BatchInsert(sTableName, ...)
     local t = self:GetDB()[sTableName]
     t:batch_insert(...)
@@ -69,6 +105,11 @@ function CMongoObj:BatchInsert(sTableName, ...)
     return ok, r.err
 end
 
+--- 删除数据
+---@param sTableName string 表名
+---@param ... any 删除条件
+---@return boolean ok 是否成功
+---@return string? err 错误信息
 function CMongoObj:Delete(sTableName, ...)
     local t = self:GetDB()[sTableName]
     t:delete(...)
@@ -80,6 +121,11 @@ function CMongoObj:Delete(sTableName, ...)
     return ok, r.err
 end
 
+--- 更新数据
+---@param sTableName string 表名
+---@param ... any 更新条件和数据
+---@return boolean ok 是否成功
+---@return string? err 错误信息
 function CMongoObj:Update(sTableName, ...)
     local t = self:GetDB()[sTableName]
     t:update(...)
@@ -95,6 +141,10 @@ function CMongoObj:Update(sTableName, ...)
     return ok, r.err
 end
 
+--- 查找数据(cursor)
+---@param sTableName string 表名
+---@param ... any 查找条件
+---@return userdata cursor对象
 function CMongoObj:Find(sTableName, ...)
     local t = self:GetDB()[sTableName]
     local r = t:find(...)

@@ -1,9 +1,28 @@
 
+---@module "base.crypt.common.array"
+--- 字节数组操作模块
+--- 提供字节数组与字符串、十六进制之间的转换，以及数组操作功能
+
 local string = require("string");
 local bit = require("base.crypt.common.bit")
 
 local XOR = bit.bxor;
 
+---@alias ByteArray integer[] 字节数组类型
+
+---@class ArrayModule
+---@field size fun(array: ByteArray): integer 获取数组大小
+---@field fromString fun(str: string): ByteArray 将字符串转换为字节数组
+---@field toString fun(bytes: ByteArray): string 将字节数组转换为字符串
+---@field fromHex fun(hex: string): ByteArray 将十六进制字符串转换为字节数组
+---@field toHex fun(array: ByteArray): string 将字节数组转换为十六进制字符串
+---@field concat fun(a: ByteArray, b: ByteArray): ByteArray 连接两个字节数组
+---@field truncate fun(a: ByteArray, newSize: integer): ByteArray 截断数组到指定大小
+---@field xor fun(a: ByteArray, b: ByteArray): ByteArray 对两个数组进行异或操作
+---@field substitute fun(input: integer[], sbox: integer[]): integer[] 使用S盒进行替换
+---@field permute fun(input: integer[], pbox: integer[]): integer[] 使用P盒进行置换
+---@field copy fun(input: any[]): any[] 复制数组
+---@field slice fun(input: any[], start: integer, stop: integer): any[] 截取数组片段
 local Array = {};
 
 Array.size = function(array)

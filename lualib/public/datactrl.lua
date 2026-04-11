@@ -1,10 +1,24 @@
+---@module "public.datactrl"
+--- 数据控制器基类
+--- 提供数据加载、保存、脏标记等通用功能
+
 --import module
 local skynet = require "skynet"
 
+---@class CDataCtrl 数据控制器基类
+---@field m_mInfo table 配置信息
+---@field m_mData table 数据存储
+---@field m_bIsDirty boolean 是否有未保存的改动
+---@field m_bLoaded boolean 是否已加载
+---@field m_bLoadedSuccess boolean 是否加载成功
+---@field m_lWaitingFunc function[] 等待加载完成的回调函数列表
 CDataCtrl = {}
 CDataCtrl.__index = CDataCtrl
 inherit(CDataCtrl, logic_base_cls())
 
+--- 创建数据控制器实例
+---@param mInfo? table 初始配置信息
+---@return CDataCtrl
 function CDataCtrl:New(mInfo)
     local o = super(CDataCtrl).New(self)
 

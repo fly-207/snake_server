@@ -1,9 +1,15 @@
+---@module "public.serverdesc"
+--- 服务器描述模块(已废弃)
+--- 定义服务器类型与发行商、平台、渠道的映射关系
+
 -- import module
 -- 废弃模块，不要再用
 
 local PLATFORM = import(lualib_path("public.gamedefines")).PLATFORM
 local PUBLISHER = import(lualib_path("public.gamedefines")).PUBLISHER
 
+--- 服务器描述枚举
+---@enum SERVER_DESC
 SERVER_DESC = {
     all = 0,
     czk_android = 1,
@@ -17,6 +23,8 @@ SERVER_DESC = {
     sm_ios = 9,
 }
 
+--- 服务器描述名称映射
+---@type table<integer, string>
 SERVER_DESC_NAME = {
     [SERVER_DESC.all] = "全类型服",
     [SERVER_DESC.czk_mix] = "混服-晨之科",       --不包含长尾
@@ -30,6 +38,8 @@ SERVER_DESC_NAME = {
     [SERVER_DESC.sm_ios] = "IOS-手盟",
 }
 
+--- 服务器描述与发行商映射
+---@type table<integer, integer>
 PUBLISHER_MATCH = {
     [SERVER_DESC.all] = PUBLISHER.none,
     [SERVER_DESC.czk_mix] = PUBLISHER.czk,
@@ -43,6 +53,8 @@ PUBLISHER_MATCH = {
     [SERVER_DESC.sm_ios] = PUBLISHER.sm,
 }
 
+--- 服务器描述与平台列表映射
+---@type table<integer, integer[]>
 PLATFORM_MATCH = {
     [SERVER_DESC.all] = {PLATFORM.android, PLATFORM.rootios, PLATFORM.ios, PLATFORM.pc},
     [SERVER_DESC.czk_mix] = {PLATFORM.android, PLATFORM.rootios, PLATFORM.ios, PLATFORM.pc},
@@ -56,6 +68,8 @@ PLATFORM_MATCH = {
     [SERVER_DESC.sm_ios] = {PLATFORM.rootios, PLATFORM.ios, PLATFORM.pc},
 }
 
+--- 服务器描述与渠道映射
+---@type table<integer, string|integer[]>
 CHANNEL_MATCH = {
     [SERVER_DESC.all] = "all",
     [SERVER_DESC.czk_mix] = "czk_mix",
@@ -69,6 +83,8 @@ CHANNEL_MATCH = {
     [SERVER_DESC.sm_ios] = "sm_ios",
 }
 
+--- 服务器描述与CPS渠道映射
+---@type table<integer, string|string[]>
 CPS_CHANNEL_MATCH = {
     [SERVER_DESC.all] = "all",
     [SERVER_DESC.czk_mix] = {"-CPS_300020", "-CPS_300021"},

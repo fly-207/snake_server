@@ -1,4 +1,12 @@
+---@module tableop
+---表操作工具模块
+---提供表的生成、复制、转换等常用操作
 
+---从表生成列表
+---@param t table 源表
+---@param func function|nil 转换函数
+---@param bIsMap boolean|nil 是否作为map遍历(pairs)，否则作为数组遍历(ipairs)
+---@return any[] r 生成的列表
 function list_generate(t, func, bIsMap)
     local r = {}
     if not bIsMap then
@@ -19,12 +27,17 @@ function list_generate(t, func, bIsMap)
     return r
 end
 
+---清空列表内容
+---@param t any[] 要清空的列表
 function list_clear(t)
     for i = #t, 1, -1 do
         t[i] = nil
     end
 end
 
+---计算表的元素数量(包括非数组部分)
+---@param t table 要计算的表
+---@return integer count 元素数量
 function table_count(t)
     local iLen = 0
     for k, v in pairs(t) do
@@ -33,6 +46,9 @@ function table_count(t)
     return iLen
 end
 
+---将表的字符串键转换为数字键
+---@param t table<string, any> 源表
+---@return table<integer, any> mNew 转换后的表
 function table_to_int_key(t)
     local mNew = {}
     for k, v in pairs(t) do
@@ -41,6 +57,9 @@ function table_to_int_key(t)
     return mNew
 end
 
+---将表的键转换为数据库键格式
+---@param t table 源表
+---@return table mNew 转换后的表
 function table_to_db_key(t)
     local mNew = {}
     for k, v in pairs(t) do
@@ -49,6 +68,10 @@ function table_to_db_key(t)
     return mNew
 end
 
+---将列表转换为以元素为键的表
+---@param l any[] 源列表
+---@param v any|nil 值，默认为索引
+---@return table<any, any> t 转换后的表
 function list_key_table(l, v)
     local t = {}
     for idx, k in pairs(l) do
@@ -57,6 +80,9 @@ function list_key_table(l, v)
     return t
 end
 
+---获取表的所有键组成的列表
+---@param t table 源表
+---@return any[] l 键列表
 function table_key_list(t)
     local l = {}
     for k, v in pairs(t) do
@@ -65,6 +91,9 @@ function table_key_list(t)
     return l
 end
 
+---获取表的所有值组成的列表
+---@param t table 源表
+---@return any[] l 值列表
 function table_value_list(t)
     local l = {}
     for k, v in pairs(t) do
@@ -73,6 +102,9 @@ function table_value_list(t)
     return l
 end
 
+---浅拷贝表
+---@param t table 源表
+---@return table m 拷贝后的新表
 function table_copy(t)
     local m = {}
     for k, v in pairs(t) do
@@ -81,6 +113,9 @@ function table_copy(t)
     return m
 end
 
+---深拷贝表
+---@param t table 源表
+---@return table result 深拷贝后的新表
 function table_deep_copy(t)
     local r = {}
     local f
@@ -106,6 +141,9 @@ function table_deep_copy(t)
     return f(t)
 end
 
+---根据权重随机选择一个键
+---@param tbl table<any, number> 权重表 {key: weight}
+---@return any|nil key 选中的键，表为空则返回nil
 function table_choose_key(tbl)
     if table_count(tbl) <= 0 then
         return
@@ -125,6 +163,11 @@ function table_choose_key(tbl)
     end
 end
 
+---切片列表
+---@param l any[] 源列表
+---@param iStart integer 开始索引
+---@param iEnd integer 结束索引
+---@return any[] lRes 切片后的新列表
 function list_split(l, iStart, iEnd)
     local lRes = {}
     for idx = iStart, iEnd do
@@ -139,6 +182,10 @@ function list_split(l, iStart, iEnd)
     return lRes
 end
 
+---检查元素是否在列表中
+---@param l any[] 列表
+---@param r any 要查找的元素
+---@return boolean exists 是否存在
 function table_in_list(l, r)
     for _, v in ipairs(l) do
         if v == r then
@@ -148,6 +195,10 @@ function table_in_list(l, r)
     return false
 end
 
+---根据键列表深度获取表中的值
+---@param t table 源表
+---@param keylist any[] 键列表
+---@return any|nil value 获取的值，不存在则返回nil
 function table_get_depth(t, keylist)
     assert(type(t) == "table")
     assert(#keylist > 0)

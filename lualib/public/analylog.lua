@@ -1,12 +1,18 @@
+---@module "public.analylog"
+--- 分析日志模块
+--- 提供游戏各类分析日志的记录接口
+
 local skynet = require "skynet"
 local res = require "base.res"
 local record = require "public.record"
 local gdefines = import(lualib_path("public.gamedefines")) 
 local analy = import(lualib_path("public.dataanaly"))
 
--- sType: 定义下(activate_ride 坐骑激活)
--- sSubtype: 子类型可以为空
--- 玩家系统分析
+--- 记录玩家系统变化日志
+---@param oPlayer table 玩家对象
+---@param sType string 系统类型
+---@param sSubtype? string 子类型
+---@param mCost? table 消耗数据
 function LogSystemInfo(oPlayer, sType, sSubtype, mCost)
     local mLog = {}
     mLog["type"] = sType
@@ -15,7 +21,10 @@ function LogSystemInfo(oPlayer, sType, sSubtype, mCost)
     LogBaseInfo(oPlayer, "PlayerSystemChange", mLog)
 end
 
--- 更新宠物列表(0 更新，1 标识增加，2 删除)
+--- 记录玩家嬋徒列表变化
+---@param oPlayer table 玩家对象
+---@param oSummon table 嬋徒对象
+---@param iOperate integer 操作类型(0更新 1增加 2删除)
 function LogPlayerSummonInfo(oPlayer, oSummon, iOperate)
     LogBaseInfo(oPlayer, "PlayerSummon", {
         summon_id = oSummon:TraceRealNo() or 0,
@@ -26,7 +35,13 @@ function LogPlayerSummonInfo(oPlayer, oSummon, iOperate)
     })
 end
 
--- 购买商品记录
+--- 记录商城购买日志
+---@param oPlayer table 玩家对象
+---@param iShop integer 商店ID
+---@param iMoneyType integer 货币类型
+---@param iSid integer 商品ID
+---@param iAmount integer 购买数量
+---@param iTotal integer 总费用
 function LogMallBuy(oPlayer, iShop, iMoneyType, iSid, iAmount, iTotal)
     local mLog = oPlayer:BaseAnalyInfo()
     mLog["yuanbao_before"] = 0
@@ -44,6 +59,14 @@ function LogMallBuy(oPlayer, iShop, iMoneyType, iSid, iAmount, iTotal)
     analy.log_data("MallBuy", mLog)
 end
 
+--- 记录结婚信息日志
+---@param oPlayer table 玩家对象 
+---@param iMale integer 男方玩家ID
+---@param sMale string 男方名称
+---@param iFemale integer 女方玩家ID
+---@param sFemale string 女方名称
+---@param iMarryType integer 婚姻类型
+---@param iOperate integer 操作类型
 function LogMarryInfo(oPlayer, iMale, sMale, iFemale, sFemale, iMarryType, iOperate)
     LogBaseInfo(oPlayer, "MarryInfo", {
         male_pid = iMale,
@@ -55,8 +78,11 @@ function LogMarryInfo(oPlayer, iMale, sMale, iFemale, sFemale, iMarryType, iOper
     })
 end
 
--- 日志说明：记录玩家日常玩法信息；            
--- iOperate 1 参与 2 完成
+--- 记录玩法参与日志
+---@param oPlayer table 玩家对象
+---@param sType string 玩法类型
+---@param iWanFa integer 玩法ID
+---@param iOperate integer 操作(1参与 2完成)
 function LogWanFaInfo(oPlayer, sType, iWanFa, iOperate)
     LogBaseInfo(oPlayer, "WanFaInfo", {
         wf_type = sType,
@@ -65,8 +91,11 @@ function LogWanFaInfo(oPlayer, sType, iWanFa, iOperate)
     })
 end
 
--- 日志说明：记录玩家战斗信息；          
--- operate int 1 参与 2 胜利 3 失败 4 逃跑
+--- 记录玩家战斗信息日志
+---@param oPlayer table 玩家对象
+---@param sType string 战斗类型
+---@param iStage integer 关卡ID
+---@param iOperate integer 操作(1参与 2胜利 3失败 4逃跑)
 function LogWarInfo(oPlayer, sType, iStage, iOperate)
     LogBaseInfo(oPlayer, "WarInfo", {
         stage_type = sType or "",
@@ -75,7 +104,10 @@ function LogWarInfo(oPlayer, sType, iStage, iOperate)
     })
 end
 
--- 日志说明: 禁言信息
+--- 记录禁言信息日志
+---@param oPlayer table 玩家对象
+---@param sMsg string 被禁言的消息
+---@param iRule integer 触发规则ID
 function LogBanChat(oPlayer, sMsg, iRule)
     LogBaseInfo(oPlayer, "BanChat", {
         chat_msg = sMsg,
@@ -83,7 +115,12 @@ function LogBanChat(oPlayer, sMsg, iRule)
     })
 end
 
--- 背包日志 
+--- 记录背包变化日志
+---@param oPlayer table 玩家对象
+---@param iOperate integer 操作类型
+---@param iSid integer 物品ID
+---@param iAmount integer 变化数量
+---@param sReason string 变化原因
 function LogBackpackChange(oPlayer, iOperate, iSid, iAmount, sReason)
     local mAnalyLog = oPlayer:BaseAnalyInfo()
     mAnalyLog["operation"] = iOperate
@@ -94,7 +131,10 @@ function LogBackpackChange(oPlayer, iOperate, iSid, iAmount, sReason)
     analy.log_data("BackpackChange", mAnalyLog)
 end
 
--- 分析日志统一方法
+--- 记录分析日志统一方法
+---@param oPlayer table 玩家对象
+---@param sFile string 日志文件名
+---@param mLog? table 日志数据
 function LogBaseInfo(oPlayer, sFile, mLog)
     mLog = mLog or {}
     analy.log_data(sFile, table_combine(oPlayer:BaseAnalyInfo(), mLog))

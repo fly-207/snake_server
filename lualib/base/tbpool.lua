@@ -1,30 +1,43 @@
--- 导入skynet模块
+---@module tbpool
+---表对象池模块
+---提供 table 对象的复用机制，减少内存分配和GC压力
+---通过对象池预分配和回收 table，提高性能
+
 local skynet = require "skynet"
 
--- 导入math模块，优化性能，避免每次调用都进行查找
 local mmin = math.min
 local mmax = math.max
 
--- 定义模块M
+---@class tbpool 表对象池模块
+---@field Pop fun(): table 从池中获取一个空表
+---@field Push fun(t: table) 将表归还到池中
+---@field Collect fun() 执行垃圾收集，清理多余的表
+---@field Clear fun(): integer 清空池中所有表，返回清空数量
+---@field Init fun() 初始化模块，启动定时收集
+---@field SetPre fun(i: integer) 设置预分配数量
+---@field SetMaxCache fun(i: integer) 设置最大缓存数量
+---@field SetMaxCollect fun(i: integer) 设置触发收集的阈值
+---@field SetCollectTime fun(i: integer) 设置收集间隔时间
 local M = {}
 
--- 预分配池的初始大小
+---@type integer 预分配池的初始大小
 local iPre = 50
--- 池中对象的最大缓存数量
+---@type integer 池中对象的最大缓存数量
 local iMaxCache = 5000000
--- 触发收集操作的最大对象数量
+---@type integer 触发收集操作的最大对象数量
 local iMaxCollect = 500000
--- 收集操作的间隔时间（毫秒）
+---@type integer 收集操作的间隔时间（毫秒）
 local iCollectTime = 50*60*100
--- 收集操作的计数器
+---@type integer 收集操作的计数器
 local iCollectNo = 0
 
--- 对象池
+---@type table[] 对象池列表
 local lPool = {}
--- 已经分配的对象计数
+---@type integer 已经分配的对象计数
 local iApplyPop = 0
 
--- 定时器函数，用于定期执行收集操作
+---重置定时收集任务
+---启动或重启定时收集循环
 local function ResetCollect()
     iCollectNo = iCollectNo + 1
     local iStartNo = iCollectNo
@@ -38,7 +51,9 @@ local function ResetCollect()
     f()
 end
 
--- 从池中获取一个对象
+---从池中获取一个空表
+---如果池为空，会预分配一批新表
+---@return table t 一个清空的表对象
 function M.Pop()
     local i = #lPool
     local t = lPool[i]
@@ -65,7 +80,9 @@ function M.Pop()
     return t
 end
 
--- 将对象返回到池中
+---将表归还到池中
+---如果池已满则丢弃
+---@param t table 要归还的表对象
 function M.Push(t)
     local i = #lPool
     if i < iMaxCache then
@@ -73,7 +90,8 @@ function M.Push(t)
     end
 end
 
--- 执行垃圾收集，移除池中部分对象
+---执行垃圾收集
+---移除池中多余的表，保留最近一次分配数量的两倍
 function M.Collect()
     local i = 2*iApplyPop
     local j = #lPool
@@ -86,7 +104,8 @@ function M.Collect()
     iApplyPop = 0
 end
 
--- 清空池中所有对象
+---清空池中所有表
+---@return integer count 清空前的池大小
 function M.Clear()
     local i = #lPool
     for ii = i, 1, -1 do
@@ -96,31 +115,35 @@ function M.Clear()
     return i
 end
 
--- 初始化模块，启动定时收集任务
+---初始化模块
+---启动定时收集任务
 function M.Init()
     ResetCollect()
 end
 
--- 设置预分配的对象数量
+---设置预分配的表数量
+---@param i integer 预分配数量
 function M.SetPre(i)
     iPre = mmax(i, 0)
 end
 
--- 设置池中对象的最大缓存数量
+---设置池中表的最大缓存数量
+---@param i integer 最大缓存数量
 function M.SetMaxCache(i)
     iMaxCache = mmax(i, 0)
 end
 
--- 设置触发收集操作的最大对象数量
+---设置触发收集操作的最大对象数量
+---@param i integer 触发阈值
 function M.SetMaxCollect(i)
     iMaxCollect = mmax(i, 0)
 end
 
--- 设置收集操作的间隔时间
+---设置收集操作的间隔时间
+---@param i integer 间隔时间(毫秒)
 function M.SetCollectTime(i)
     iCollectTime = mmax(i, 1)
     ResetCollect()
 end
 
--- 返回模块M
 return M

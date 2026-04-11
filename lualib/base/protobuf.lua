@@ -1,3 +1,7 @@
+---@module "base.protobuf"
+--- Protobuf 编解码模块
+--- 提供 Protocol Buffers 的编码、解码、打包、解包功能
+
 local c = require "protobuf.c"
 
 local setmetatable = setmetatable
@@ -12,10 +16,28 @@ local io = io
 local tinsert = table.insert
 local rawget = rawget
 
+---@class ProtobufModule Protobuf模块
+---@field GC userdata GC对象
+---@field lasterror fun(): string 获取最后错误
+---@field encode fun(message: string, t: table, func?: function, ...): string|any 编码消息
+---@field decode fun(typename: string, buffer: string, length?: integer): table|false, string? 解码消息
+---@field unpack fun(pattern: string, buffer: string, length: integer): ... 解包消息
+---@field pack fun(pattern: string, ...): string 打包消息
+---@field check fun(typename: string, field?: string): boolean|integer 检查类型
+---@field all_fields fun(typename: string): table 获取所有字段
+---@field name_fields fun(typename: string): table 按名称获取字段
+---@field id_fields fun(typename: string): table 按ID获取字段
+---@field copy_repeated fun(t: table, k: string): table 复制重复字段
+---@field copy_message fun(t: table): table 复制消息
+---@field register fun(buffer: string) 注册协议
+---@field register_file fun(filename: string) 注册协议文件
+---@field default fun(typename: string, tbl: table): table 设置默认值
 local M = {}
 
+---@type table<string, table> 模式缓存
 local _pattern_cache = {}
 
+---@type userdata Protobuf环境
 local P,GC
 
 P = debug.getregistry().PROTOBUF_ENV
@@ -29,11 +51,16 @@ end
 
 M.GC = GC
 
+--- 获取最后的错误信息
+---@return string 错误信息
 function M.lasterror()
     return c._last_error(P)
 end
 
+---@type table<string, table> 解码类型缓存
 local decode_type_cache = {}
+
+---@type table 读取元表
 local _R_meta = {}
 
 function _R_meta:__index(key)
@@ -46,20 +73,34 @@ function _R_meta:__index(key)
     return v
 end
 
+---@type table 读取器函数表
 local _reader = {}
 
+--- 读取浮点数
+---@param key string 字段名
+---@return number
 function _reader:real(key)
     return c._rmessage_real(self._CObj , key , 0)
 end
 
+--- 读取字符串
+---@param key string 字段名
+---@return string
 function _reader:string(key)
     return c._rmessage_string(self._CObj , key , 0)
 end
 
+--- 读取布尔值
+---@param key string 字段名
+---@return boolean
 function _reader:bool(key)
     return c._rmessage_int(self._CObj , key , 0) ~= 0
 end
 
+--- 读取子消息
+---@param key string 字段名
+---@param message_type string 消息类型
+---@return table?
 function _reader:message(key, message_type)
     local rmessage = c._rmessage_message(self._CObj , key , 0)
     if rmessage then
@@ -72,10 +113,16 @@ function _reader:message(key, message_type)
     end
 end
 
+--- 读取整数
+---@param key string 字段名
+---@return integer
 function _reader:int(key)
     return c._rmessage_int(self._CObj , key , 0)
 end
 
+--- 读取重复浮点数数组
+---@param key string 字段名
+---@return number[]
 function _reader:real_repeated(key)
     local cobj = self._CObj
     local n = c._rmessage_size(cobj , key)
@@ -86,6 +133,9 @@ function _reader:real_repeated(key)
     return ret
 end
 
+--- 读取重复字符串数组
+---@param key string 字段名
+---@return string[]
 function _reader:string_repeated(key)
     local cobj = self._CObj
     local n = c._rmessage_size(cobj , key)
@@ -96,6 +146,9 @@ function _reader:string_repeated(key)
     return ret
 end
 
+--- 读取重复布尔数组
+---@param key string 字段名
+---@return boolean[]
 function _reader:bool_repeated(key)
     local cobj = self._CObj
     local n = c._rmessage_size(cobj , key)
@@ -106,6 +159,10 @@ function _reader:bool_repeated(key)
     return ret
 end
 
+--- 读取重复消息数组
+---@param key string 字段名
+---@param message_type string 消息类型
+---@return table[]
 function _reader:message_repeated(key, message_type)
     local cobj = self._CObj
     local n = c._rmessage_size(cobj , key)
@@ -121,6 +178,9 @@ function _reader:message_repeated(key, message_type)
     return ret
 end
 
+--- 读取重复整数数组
+---@param key string 字段名
+---@return integer[]
 function _reader:int_repeated(key)
     local cobj = self._CObj
     local n = c._rmessage_size(cobj , key)
@@ -215,8 +275,13 @@ end
 
 ----------- encode ----------------
 
+---@type table<string, table> 编码类型缓存
 local encode_type_cache = {}
 
+--- 编码消息内部函数
+---@param CObj userdata C对象
+---@param message_type string 消息类型
+---@param t table 数据表
 local function encode_message(CObj, message_type, t)
     local type = encode_type_cache[message_type]
     for k,v in pairs(t) do
@@ -225,6 +290,7 @@ local function encode_message(CObj, message_type, t)
     end
 end
 
+---@type table 写入器函数表
 local _writer = {
     real = c._wmessage_real,
     enum = c._wmessage_string,
@@ -232,33 +298,53 @@ local _writer = {
     int = c._wmessage_int,
 }
 
+--- 写入布尔值
+---@param k string 字段名
+---@param v boolean 值
 function _writer:bool(k,v)
     c._wmessage_int(self, k, v and 1 or 0)
 end
 
+--- 写入子消息
+---@param k string 字段名
+---@param v table 消息表
+---@param message_type string 消息类型
 function _writer:message(k, v , message_type)
     local submessage = c._wmessage_message(self, k)
     encode_message(submessage, message_type, v)
 end
 
+--- 写入重复浮点数数组
+---@param k string 字段名
+---@param v number[] 值数组
 function _writer:real_repeated(k,v)
     for _,v in ipairs(v) do
         c._wmessage_real(self,k,v)
     end
 end
 
+--- 写入重复布尔数组
+---@param k string 字段名
+---@param v boolean[] 值数组
 function _writer:bool_repeated(k,v)
     for _,v in ipairs(v) do
         c._wmessage_int(self, k, v and 1 or 0)
     end
 end
 
+--- 写入重复字符串数组
+---@param k string 字段名
+---@param v string[] 值数组
 function _writer:string_repeated(k,v)
     for _,v in ipairs(v) do
         c._wmessage_string(self,k,v)
     end
 end
 
+--- 写入重复消息数组
+---@param k string 字段名
+---@param v table[] 消息表数组
+---@param message_type string 消息类型
 function _writer:message_repeated(k,v, message_type)
     for _,v in ipairs(v) do
         local submessage = c._wmessage_message(self, k)
@@ -266,6 +352,9 @@ function _writer:message_repeated(k,v, message_type)
     end
 end
 
+--- 写入重复整数数组
+---@param k string 字段名
+---@param v integer[] 值数组
 function _writer:int_repeated(k,v)
     for _,v in ipairs(v) do
         c._wmessage_int(self,k,v)
@@ -307,6 +396,7 @@ _writer[128+9] = _writer[128+5]
 _writer[128+10] = _writer[128+7]
 _writer[128+11] = _writer[128+7]
 
+---@type table 编码类型元表
 local _encode_type_meta = {}
 
 function _encode_type_meta:__index(key)
@@ -342,6 +432,7 @@ end
 
 --------- unpack ----------
 
+---@type table<integer, table> 模式类型映射
 local _pattern_type = {
     [1] = {"%d","i"},
     [2] = {"%F","r"},
@@ -369,6 +460,9 @@ _pattern_type[128+10] = _pattern_type[128+7]
 _pattern_type[128+11] = _pattern_type[128+7]
 
 
+--- 创建模式
+---@param pattern string 模式字符串
+---@return table? 模式对象
 local function _pattern_create(pattern)
     local iter = string.gmatch(pattern,"[^ ]+")
     local message = iter()
@@ -404,16 +498,29 @@ setmetatable(_pattern_cache, {
     end
 })
 
+--- 解包消息
+---@param pattern string 模式字符串
+---@param buffer string 二进制数据
+---@param length integer 数据长度
+---@return ... 解包结果
 function M.unpack(pattern, buffer, length)
     local pat = _pattern_cache[pattern]
     return c._pattern_unpack(pat.CObj , pat.format, pat.size, buffer, length)
 end
 
+--- 打包消息
+---@param pattern string 模式字符串
+---@param ... any 打包参数
+---@return string 打包结果
 function M.pack(pattern, ...)
     local pat = _pattern_cache[pattern]
     return c._pattern_pack(pat.CObj, pat.format, pat.size , ...)
 end
 
+--- 检查类型或字段是否存在
+---@param typename string 类型名
+---@param field? string 字段名
+---@return boolean|integer 检查结果
 function M.check(typename , field)
     if field == nil then
         return c._env_type(P,typename)
@@ -424,10 +531,14 @@ end
 
 --------------
 
+---@type table<string, table> 默认值缓存
 local default_cache = {}
 
 -- todo : clear default_cache, v._CObj
 
+--- 获取默认值表
+---@param typename string 类型名
+---@return table 默认值元表
 local function default_table(typename)
     local v = default_cache[typename]
     if v then
@@ -440,8 +551,13 @@ local function default_table(typename)
     return v
 end
 
+---@type table 解码消息元表
 local decode_message_mt = {}
 
+--- 解码消息回调
+---@param typename string 类型名
+---@param buffer string 二进制数据
+---@return table 解码结果
 local function decode_message_cb(typename, buffer)
     --return setmetatable ( { typename, buffer } , decode_message_mt)
     local ret = {}
@@ -449,6 +565,12 @@ local function decode_message_cb(typename, buffer)
     return setmetatable(ret , default_table(typename))
 end
 
+--- 解码消息
+---@param typename string 类型名
+---@param buffer string 二进制数据
+---@param length? integer 数据长度
+---@return table|false 解码结果或false
+---@return string? 错误信息
 function M.decode(typename, buffer, length)
     local ret = {}
     local ok = c._decode(P, decode_message_cb , ret , typename, buffer, length)
@@ -459,18 +581,31 @@ function M.decode(typename, buffer, length)
     end
 end
 
+--- 获取所有字段
+---@param typename string 类型名
+---@return table 字段列表
 function M.all_fields(typename)
     return c._field_all(P, typename)
 end
 
+--- 按名称获取字段
+---@param typename string 类型名
+---@return table 字段映射
 function M.name_fields(typename)
     return c._fields_by_name(P, typename)
 end
 
+--- 按ID获取字段
+---@param typename string 类型名
+---@return table 字段映射
 function M.id_fields(typename)
     return c._fields_by_id(P, typename)
 end
 
+--- 复制重复字段
+---@param t table 源表
+---@param k string 字段名
+---@return table 复制的列表
 function M.copy_repeated(t, k)
     local tn = t._CType
     assert(tn, "copy_message err")
@@ -489,6 +624,9 @@ function M.copy_repeated(t, k)
     return l
 end
 
+--- 复制消息
+---@param t table 源消息表
+---@return table 复制的消息
 function M.copy_message(t)
     local tn = t._CType
     assert(tn, "copy_message err")
@@ -520,6 +658,8 @@ function M.copy_message(t)
     return m
 end
 
+--- 展开延迟解码的表
+---@param tbl table 要展开的表
 local function expand(tbl)
     local typename = rawget(tbl , 1)
     local buffer = rawget(tbl , 2)
@@ -538,6 +678,10 @@ function decode_message_mt.__pairs(tbl)
     return pairs(tbl)
 end
 
+--- 设置默认值
+---@param typename string 类型名
+---@param tbl table 要设置的表
+---@return table 设置后的表
 local function set_default(typename, tbl)
     for k,v in pairs(tbl) do
         if type(v) == "table" then
@@ -554,10 +698,14 @@ local function set_default(typename, tbl)
     return setmetatable(tbl , default_table(typename))
 end
 
+--- 注册协议
+---@param buffer string 协议二进制数据
 function M.register(buffer)
     c._env_register(P, buffer)
 end
 
+--- 注册协议文件
+---@param filename string 文件名
 function M.register_file(filename)
     local f = assert(io.open(filename , "rb"))
     local buffer = f:read "*a"
