@@ -22,6 +22,7 @@ local gamedb = import(lualib_path("public.gamedb"))
 
 print("CGate 文件被导入")
 
+---@class LoginCGate
 CGate = {}
 CGate.__index = CGate
 inherit(CGate, logic_base_cls())

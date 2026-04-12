@@ -13,6 +13,7 @@ end
 ONLINE_PLAYER_LIMIT = 8000
 TIME_KEEP_NUMBER = 3 * 60
 
+---@class LoginCLoginQueueMgr
 CLoginQueueMgr = {}
 CLoginQueueMgr.__index = CLoginQueueMgr
 inherit(CLoginQueueMgr, logic_base_cls())

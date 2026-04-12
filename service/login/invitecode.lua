@@ -15,6 +15,7 @@ function NewInviteCodeMgr()
     return o
 end
 
+---@class LoginCInviteCodeMgr
 CInviteCodeMgr = {}
 CInviteCodeMgr.__index = CInviteCodeMgr
 inherit(CInviteCodeMgr, logic_base_cls())

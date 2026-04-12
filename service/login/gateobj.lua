@@ -20,10 +20,13 @@ local serverinfo = import(lualib_path("public.serverinfo"))
 local gamedb = import(lualib_path("public.gamedb"))
 
 CConnection = import(service_path("CConnection")).CConnection
+
+---@type LoginCGate
 CGate = import(service_path("CGate")).CGate
 CGateMgr = import(service_path("CGateMgr")).CGateMgr
 
 
+---@return LoginCGateMgr
 function NewGateMgr(...)
     local o = CGateMgr:New(...)
     return o
@@ -38,3 +41,10 @@ function NewConnection(...)
     local o = CConnection:New(...)
     return o
 end
+
+---@class LoginGateObj
+local _M = {}
+_M.NewGateMgr = NewGateMgr
+_M.NewGate = NewGate
+_M.NewConnection = NewConnection
+return _M

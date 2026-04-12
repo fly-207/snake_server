@@ -102,7 +102,7 @@ function CGate:DelConnection(iHandle)
     end
 end
 
-
+---@class QrcodeCGateMgr
 CGateMgr = {}
 CGateMgr.__index = CGateMgr
 inherit(CGateMgr, logic_base_cls())

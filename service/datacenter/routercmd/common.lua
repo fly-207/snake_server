@@ -22,6 +22,9 @@ function TestRouterRequest(mRecord, mData)
     })
 end
 
+-- GS login 服务角色创建流程中通过 router.Request 调用
+-- 向 idsupply 申请全局唯一 pid，并向 CS-MongoDB roleinfo 表插入角色元数据
+-- @param mData  table  {server, born_server, account, channel, name, school, icon, platform}
 function TryCreateRole(mRecord, mData)
     local sServerTag = mData.server
     local sBornServer = mData.born_server

@@ -55,6 +55,14 @@ function CDataCenter:InitDataCenterDb(mInit)
     end)
 end
 
+-- 向 idsupply 申请全局唯一 pid，然后将新角色元数据写入 CS-MongoDB roleinfo 表
+-- 调用方：routercmd/common.lua TryCreateRole（由 GS login 服务 router.Request 触发）
+-- @param sServerTag  string   当前服务器 tag（now_server）
+-- @param sBornServer string   角色出生服务器 tag
+-- @param sAccount    string   账号
+-- @param iChannel    int      渠道 ID
+-- @param mInfo       table    {name, school, icon, platform}
+-- @param endfunc     function 回调：endfunc(iPid) 或 endfunc(nil) 表示失败
 function CDataCenter:TryCreateRole(sServerTag, sBornServer, sAccount, iChannel, mInfo, endfunc)
     interactive.Request(".idsupply", "common", "GenPlayerId", {},
         function(mRecord, mData)
@@ -63,6 +71,17 @@ function CDataCenter:TryCreateRole(sServerTag, sBornServer, sAccount, iChannel, 
     )
 end
 
+-- 拿到 idsupply 分配的 pid 后，向 roleinfo 表插入一条新记录
+-- roleinfo 是 CS 侧跨服角色全局索引，GetRoleList 从此表读取角色列表
+-- 插入失败（如 MongoDB 异常）时返回 nil，调用方负责向 GS 返回 errcode
+-- @param mRecord    table  skynet 消息来源 (未使用)
+-- @param mData      table  idsupply 响应 {id:int}
+-- @param sServerTag string now_server
+-- @param sBornServer string born_server
+-- @param sAccount   string 账号
+-- @param iChannel   int    渠道 ID
+-- @param mInfo      table  {name, school, icon, platform}
+-- @return           int|nil  成功返回 pid，失败返回 nil
 function CDataCenter:_TryCreateRole2(mRecord, mData, sServerTag, sBornServer, sAccount, iChannel, mInfo)
     if is_release(self) then
         return
@@ -97,6 +116,14 @@ function CDataCenter:UpdateRoleInfo(iPid, mInfo)
     self.m_oGameDb:Update("roleinfo", {pid = iPid}, {["$set"]=mInfo}, true)
 end
 
+-- 判断并记录账号/设备是否首次注册
+-- 首次时写入 register 表（按 account+channel+platform 唯一）和 device_register 表（按 device_id 唯一）
+-- 此函数在每次 SDK Token 验证后的 GetRoleList 请求中调用，是账号数据在数据库中首次出现的时机
+-- @param sAccount   string  账号
+-- @param lChannel   table   渠道 ID 列表（同一账号可能跨多渠道）
+-- @param iPlatform  int     平台 ID
+-- @param sDeviceId  string  设备 ID
+-- @return           bool, bool  (bFirstRegister, bDeviceFirstRegister)
 function CDataCenter:CheckFirstRegister(sAccount, lChannel, iPlatform, sDeviceId)
     local bFirstRegister, bDeviceFirstRegister
     local m = self.m_oGameDb:Find("register", {
@@ -142,6 +169,13 @@ function CDataCenter:CheckFirstRegister(sAccount, lChannel, iPlatform, sDeviceId
     return bFirstRegister, bDeviceFirstRegister
 end
 
+-- 从 roleinfo 表读取指定账号在目标服务器列表中的角色信息
+-- 过滤已删除角色（deleted=true），结果直接返回给 loginverify 展示给客户端
+-- @param sAccount  string  账号
+-- @param lChannel  table   渠道 ID 列表
+-- @param iPlatform int     平台 ID
+-- @param lServer   table   目标服务器 tag 列表
+-- @return          table   角色信息列表 [{server, pid, icon, name, school, grade, login_time}]
 function CDataCenter:GetRoleList(sAccount, lChannel, iPlatform, lServer)
     local mRet = {}
     local m = self.m_oGameDb:Find("roleinfo", {

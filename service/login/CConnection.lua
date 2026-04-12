@@ -1,5 +1,6 @@
 --import module
 
+---@type LoginGlobal
 local global = require "global"
 local skynet = require "skynet"
 local net = require "base.net"
@@ -22,6 +23,7 @@ local cjson = require "cjson"
 
 print("CConnection 文件被导入")
 
+---@class LoginCConnection
 CConnection = {}
 CConnection.__index = CConnection
 inherit(CConnection, logic_base_cls())
@@ -467,6 +469,8 @@ function CConnection:CheckAccountRoleAmount2(mRecord, mData, fCallback)
     fCallback(mCnt)
 end
 
+-- 角色创建入口：校验目标服务器后进入数量检查流程
+-- @param mData  table  {server_key:string, role_type:int, name:string, school:int}
 function CConnection:CreateRole(mData)
     local sServerKey = mData.server_key
     if not sServerKey or sServerKey == "" then
@@ -474,6 +478,7 @@ function CConnection:CreateRole(mData)
     end
     mData.server_key = sServerKey
 
+    -- 仅允许在本服或已连接的关联服上创建角色
     if sServerKey == get_server_key() or global.oGateMgr:IsLinkedServer(sServerKey) then
         self:_CreateRole2(0, mData)
     end
@@ -495,6 +500,9 @@ function CConnection:_CreateRole2(iErrCode, mData)
     self:CheckAccountRoleAmount(fCallback)
 end
 
+-- 统计账号在各服务器的已有角色数，校验同服角色上限（≤3），并判断是否首次注册
+-- @param mCnt   table  {serverTag:int, ...}  各服现有角色计数
+-- @param mData  table  角色创建参数
 function CConnection:_CreateRole3(mCnt, mData)
     local iTot = 0
     for k, cnt in pairs(mCnt) do
@@ -506,10 +514,14 @@ function CConnection:_CreateRole3(mCnt, mData)
         self:Send("GS2CNotify", {cmd="您在同一服务器所拥有的角色不能超过3个哦"})
         return
     end
+    -- bFirstRole=true 表示该账号在所有服务器均无角色，为真正首次注册
     local bFirstRole = iTot <= 0
     self:TrueCreateRole(mData, bFirstRole)
 end
 
+-- 核心创建流程：校验名字唯一性后写入 namecounter，回调 _TrueCreateRole1
+-- @param mData      table  {server_key, role_type, name, school}
+-- @param bFirstRole bool   是否为该账号第一个角色（用于注册埋点日志）
 function CConnection:TrueCreateRole(mData, bFirstRole)
     local iStatus = self.m_oStatus:Get()
     assert(iStatus, "connection status is nil")
@@ -558,6 +570,15 @@ function CConnection:TrueCreateRole(mData, bFirstRole)
     end)
 end
 
+-- 名字占位成功后，向 CS 侧 datacenter 服务申请全局唯一 pid
+-- 任一后续步骤失败需回滚 namecounter（DeleteName），datacenter 失败需 RevertRole
+-- @param mRecord    table  skynet 消息来源信息
+-- @param mData      table  namecounter 操作结果 {success:bool}
+-- @param iRoleType  int    角色类型（对应 daobiao/roletype 配置表 key）
+-- @param sName      string 已占位的角色名
+-- @param iSchool    int    职业/门派 ID
+-- @param sServerTag string 目标服务器 tag
+-- @param bFirstRole bool   是否首次注册
 function CConnection:_TrueCreateRole1(mRecord, mData, iRoleType, sName, iSchool, sServerTag, bFirstRole)
     if not mData.success then
         self.m_oStatus:Set(gamedefines.LOGIN_CONNECTION_STATUS.login_account)
@@ -593,6 +614,14 @@ function CConnection:_TrueCreateRole1(mRecord, mData, iRoleType, sName, iSchool,
     end
 end
 
+-- 收到 datacenter 分配的全局唯一 pid 后，写入 playerdb + offlinedb 完成角色创建
+-- 创建成功后向客户端发送 GS2CCreateRole；首次注册时调用 LogRegisterAccount 写埋点日志
+-- @param mData      table  datacenter.TryCreateRole 返回 {id:int}
+-- @param iRoleType  int    角色类型
+-- @param sName      string 角色名（已在 namecounter 占位）
+-- @param iSchool    int    职业/门派 ID
+-- @param sServerTag string 目标服务器 tag
+-- @param bFirstRole bool   是否首次注册（影响埋点日志）
 function CConnection:_TrueCreateRole2(mData, iRoleType, sName, iSchool, sServerTag, bFirstRole)
     local id = mData.id
     if not id then
@@ -672,6 +701,8 @@ function CConnection:_TrueCreateRole2(mData, iRoleType, sName, iSchool, sServerT
     })
 end
 
+-- 首次注册埋点：写运营日志 + analy RegisterAccount，并向 CS 侧 datacenter 查询该账号所有角色
+-- 只在当前账号仅有 1 个角色时才向 loginverify 发送注册通知（CS 侧统计）
 function CConnection:LogRegisterAccount()
     local mLogData = {}
     mLogData.account = self:GetAccount()
@@ -694,6 +725,8 @@ function CConnection:LogRegisterAccount()
     end)
 end
 
+-- 拿到 GetRoleListByAccount 回调后，展开注册埋点二次确认
+-- 务必该账号全服仅有 1 个角色（真正新账号）才记录 RegisterAccount_2
 function CConnection:_LogRegisterAccount(lRoleList)
     --　当前账号只有一个角色的时候记录
     if not lRoleList or #lRoleList ~= 1 then return end
@@ -701,6 +734,16 @@ function CConnection:_LogRegisterAccount(lRoleList)
     analy.log_data("RegisterAccount_2", self:GetBaseAnalyData()) 
 end
 
+-- 构建新角色初始化数据结构（写入 playerdb.CreatePlayer）
+-- 出生城镇区：map_id=1001, pos={100,100}；年级=0, grade=0, icon/shape 来自 roletype 表
+-- @param sServerTag    string  目标服务器 tag（born_server）
+-- @param sAccount      string  账号
+-- @param iChannel      int     渠道 ID
+-- @param iFakePlatform int     平台 ID
+-- @param iPid          int     datacenter 分配的全局唯一 pid
+-- @param iSchool       int     职业/门派 ID
+-- @param mExtend       table   roletype 表数据 {sex, shape, roletype}
+-- @return              table   完整 playerdb 记录
 function CConnection:GetCreateInfo(sServerTag, sAccount, iChannel, iFakePlatform, iPid, iSchool, mExtend)
     mExtend = mExtend or {}
     local mData = {

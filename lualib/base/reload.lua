@@ -7,8 +7,9 @@
 local Ms = {}
 
 ---导入模块函数，用于加载并缓存模块
----@param sModule string 模块路径，可以使用斜杠或点分隔
----@return table|nil module 导入的模块表，如果加载失败则返回nil
+---@generic T
+---@param sModule string 模块路径（点分隔），与 require 路径规则相同
+---@return T module 导入的模块表
 function import(sModule)
     -- 将模块路径中的斜杠替换为点，以符合Lua模块命名规范
     local sKey = string.gsub(sModule, "/", ".")

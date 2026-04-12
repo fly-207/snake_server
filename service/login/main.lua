@@ -14,6 +14,8 @@ local textcmd = import(service_path("textcmd.init"))
 local netcmd = import(service_path("netcmd.init"))
 local routercmd = import(service_path("routercmd.init"))
 local logiccmd = import(service_path("logiccmd.init"))
+
+---@type LoginGateObj
 local gateobj = import(service_path("gateobj"))
 local loginqueuemgr = import(service_path("loginqueue"))
 local invitecode = import(service_path("invitecode"))
@@ -24,6 +26,7 @@ skynet.start(function()
     texthandle.Dispatch(textcmd)
     router.DispatchC(routercmd)
 
+    ---@type LoginCGateMgr
     global.oGateMgr = gateobj.NewGateMgr()
     global.oGateMgr:Init()
     local  sPorts = serverdefines.get_gateway_ports()
@@ -33,9 +36,12 @@ skynet.start(function()
         local oGate = gateobj.NewGate(v)
         global.oGateMgr:AddGate(oGate)
     end
+
+    ---@type LoginCLoginQueueMgr
     global.oLoginQueueMgr = loginqueuemgr:NewLoginQueueMgr()
     global.oLoginQueueMgr:Init()
 
+    ---@type LoginCInviteCodeMgr
     global.oInviteCodeMgr = invitecode:NewInviteCodeMgr()
 
     skynet.register ".login"

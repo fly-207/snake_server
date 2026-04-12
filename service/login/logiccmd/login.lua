@@ -1,9 +1,12 @@
 --import module
+
+---@type LoginGlobal
 local global = require "global"
 local skynet = require "skynet"
 local interactive = require "base.interactive"
 
 function LoginResult(mRecord, mData)
+    ---@type LoginCGateMgr
     local oGateMgr = global.oGateMgr
     local oConnection = oGateMgr:GetConnection(mData.handle)
     if oConnection then
@@ -22,8 +25,10 @@ function SetGateOpenStatus(mRecord, mData)
 end
 
 function OnLogout(mRecord, mData)
+    ---@type LoginCLoginQueueMgr
     local oLoginQueueMgr = global.oLoginQueueMgr
     oLoginQueueMgr:OnLogout(mData.pid)
+    ---@type LoginCGateMgr
     local oGateMgr = global.oGateMgr
     oGateMgr:OnLogout(mData)
 end

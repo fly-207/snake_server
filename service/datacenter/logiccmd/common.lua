@@ -3,6 +3,10 @@ local global = require "global"
 local skynet = require "skynet"
 local interactive = require "base.interactive"
 
+-- GS 侧 loginverify 服务通过 router.Request 调用此接口
+-- 先调用 CheckFirstRegister（写 register/device_register 表），再查询 roleinfo 表
+-- 是账号数据首次写入 CS 数据库的触发点（每次 SDK token 验证后都会调用）
+-- @param mData  table  {account, channel:[], platform, server:[], device_id}
 function GetRoleList(mRecord, mData)
     local sAccount = mData.account
     local lChannel = mData.channel

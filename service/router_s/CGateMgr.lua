@@ -9,7 +9,7 @@ local extype = require "base.extype"
 local res = require "base.res"
 local record = require "public.record"
 
-
+---@class RouterSCGateMgr
 CGateMgr = {}
 CGateMgr.__index = CGateMgr
 inherit(CGateMgr, logic_base_cls())

@@ -27,10 +27,14 @@ WAIT_PUSH_NUM = 200
 
 MAX_ROLE_TOKEN_ID = 10000
 
+---@class LoginCGateMgr
 CGateMgr = {}
 CGateMgr.__index = CGateMgr
 inherit(CGateMgr, logic_base_cls())
 
+
+---comment
+---@return LoginCGateMgr
 function CGateMgr:New()
     local o = super(CGateMgr).New(self)
     o.m_iOpenStatus = 3    -- 0:维护状态 1:白名单可登陆 2:所有玩家可登陆
@@ -186,6 +190,7 @@ function CGateMgr:GetGate(iAddr)
     return self.m_mGates[iAddr]
 end
 
+---@return LoginCConnection
 function CGateMgr:GetConnection(iHandle)
     return self.m_mNoteConnections[iHandle]
 end

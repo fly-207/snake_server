@@ -1,11 +1,15 @@
 --import module
 
+---@type LoginGlobal
 local global = require "global"
 local skynet = require "skynet"
 local interactive = require "base.interactive"
 
 local gamedefines = import(lualib_path("public.gamedefines"))
 
+---comment
+---@param oConn LoginCConnection
+---@param mData any
 function C2GSQueryLogin(oConn,mData)
     local oGateMgr = global.oGateMgr
     if oGateMgr:IsMaintain() then
