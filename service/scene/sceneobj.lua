@@ -86,6 +86,10 @@ function CScene:AoiGetView(iEid, iType)
     return {}
 end
 
+-- 将实体加入 AOI 格子系统，AOI 引擎返回 enter/leave 事件列表后触发双向通知
+-- @param sFunc  string  AOI 操作名（CreateObject / UpdateObjectPos / RemoveObject）
+-- @param iEid   int     实体 ID
+-- @param ...    table?  操作参数（坐标、类型等）
 function CScene:AoiAction(sFunc, iEid, ...)
     local oView = self:GetEntity(iEid)
     if not oView then
@@ -218,6 +222,12 @@ function CScene:Leave(obj)
     baseobj_delay_release(obj)
 end
 
+-- 创建玩家实体、注册到 AOI，发送 GS2CEnterScene 给自身，AOI 感知会推送视野内实体信息
+-- @param iPid   int    玩家 pid
+-- @param iEid   int    实体 ID（由 world 侧分配）
+-- @param mPos   table  {x,y,face_x,face_y} 进入坐标
+-- @param mInfo  table  PackSceneInfo 打包的玩家视觉数据（name/model_info/等）
+-- @param iSpeed int    行走速度
 function CScene:EnterPlayer(iPid, iEid, mPos, mInfo, iSpeed)
     assert(not self.m_mPlayers[iPid], string.format("EnterPlayer error %d %d", iPid, iEid))
     local obj = playerobj.NewPlayerEntity(iEid, iPid)

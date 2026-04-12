@@ -109,6 +109,10 @@ function CPlayerEntity:Release()
     super(CPlayerEntity).Release(self)
 end
 
+-- 收集 AOI 变化（进入/离开），200ms 后批量处理，减少频繁小包
+-- @param iClass  int  0=实体，1=队伍
+-- @param iOther  int  对方实体 ID 或队伍 ID
+-- @param iType   int  +1=进入视野，-1=离开视野
 function CPlayerEntity:SetAoiAction(iClass, iOther, iType)
     local mELEvent
     if iClass == 0 then
@@ -455,6 +459,8 @@ function CPlayerEntity:ClrCacheSyncPosQueue()
     self:DelTimeCb("DoSyncPosQueue")
 end
 
+-- 接收客户端发来的移动路径，缓存后 500ms 统一批处理
+-- @param mQ  table  [{pos:{x,y,face_x,face_y}, time:int}, ...]
 function CPlayerEntity:CacheSyncPosQueue(mQ)
     if not self:GetTeam() or self:IsLeader() then
         self.m_mCachePosQueue = mQ
@@ -479,6 +485,8 @@ function CPlayerEntity:CacheSyncPosQueue(mQ)
     end
 end
 
+-- 处理一批移动路径：取最新一段广播给视野内玩家，并驱动服务器端位置状态机
+-- @param mQ  table  [{pos:{x,y,...}, time:int}, ...]
 function CPlayerEntity:SyncPosQueue(mQ)
     --[[
     local iCheck = self:ValidWalk(mQ)
@@ -556,6 +564,8 @@ function CPlayerEntity:ValidWalk(mQ)
     return 0
 end
 
+-- 服务器端位置推进状态机：按 time 间隔推进到下一个路径点，同时更新 AOI 格位置
+-- @param mCurInfo  table  {pos:{x,y,...}, time:int}  当前路径节点
 function CPlayerEntity:__SyncPosQueue(mCurInfo)
     self:DelTimeCb("__SyncPosQueue")
     local mCurPos = gamedefines.RecoverPos(mCurInfo["pos"])

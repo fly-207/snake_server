@@ -292,6 +292,9 @@ function CSceneMgr:OnLogout(oPlayer)
     self:LeaveScene(oPlayer, true)
 end
 
+-- 登录时的场景进入入口：重登走 ReEnterScene，首次走 EnterDurableScene
+-- @param oPlayer   CPlayer  玩家对象
+-- @param bReEnter  bool     true=断线重连，false=首次登录
 function CSceneMgr:OnLogin(oPlayer, bReEnter)
     if bReEnter then
         self:ReEnterScene(oPlayer)
@@ -322,10 +325,14 @@ end
 --     return {errcode = gamedefines.ERRCODE.ok}
 -- end
 
+-- 进入持久化大世界场景：从 ActiveCtrl 读取上次记录的地图/坐标，选择合适的 scene 实例
+-- @param oPlayer  CPlayer  玩家对象
 function CSceneMgr:EnterDurableScene(oPlayer)
+    -- mDurableInfo: {map_id:int, pos:{x,y,face_x,face_y,...}}
     local mDurableInfo = oPlayer.m_oActiveCtrl:GetDurableSceneInfo()
     local iMapId = mDurableInfo.map_id
     local mPos = mDurableInfo.pos
+    -- 按负载选择该地图下的 scene 实例
     local oScene = self:SelectDurableScene(iMapId)
     self:EnterScene(oPlayer, oScene:GetSceneId(), {pos = mPos})
 end
@@ -1132,11 +1139,16 @@ function CScene:SyncPlayerInfo(oPlayer, mArgs)
     end
 end
 
+-- 玩家进入场景的 world 侧代理：记录状态、发送 GS2CShowScene，并通知远端 scene 服务创建实体
+-- @param oPlayer       CPlayer  玩家对象
+-- @param mPos          table    {x,y,face_x,face_y,...} 进入坐标
+-- @param iFromSceneId  int|nil  来源场景 ID（用于事件）
 function CScene:EnterPlayer(oPlayer, mPos, iFromSceneId)
     local oOldScene = oPlayer.m_oActiveCtrl:GetNowScene()
     if oOldScene and oOldScene:GetSceneId() == self.m_iSceneId then
         record.error(debug.traceback())
     end
+    -- 记录玩家当前场景/坐标到 ActiveCtrl（断线重连、离线存档依赖此值）
     oPlayer.m_oActiveCtrl:SetNowSceneInfo({
         now_scene = self.m_iSceneId,
         now_pos = mPos,

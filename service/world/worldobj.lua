@@ -337,6 +337,10 @@ function CWorldMgr:LogoutNotifyGate(pid, sToken)
     interactive.Send(".login", "login", "OnLogout", {pid = pid, token = sToken})
 end
 
+-- 登录入口：根据 forcelogin 标志决定走普通登录还是强制登录（从跨服返回时置 1）
+-- @param mRecord  table  skynet 消息来源信息 {source, session}
+-- @param mConn    table  socket 连接信息 {handle:int, gate:int, ip:string, port:int}
+-- @param mRole    table  角色登录数据 {pid:int, role_token:string, forcelogin:int, now_server:string, ...}
 function CWorldMgr:Login(mRecord, mConn, mRole)
     local iForceLogin = mRole.forcelogin
     if iForceLogin <= 0 then
@@ -347,8 +351,13 @@ function CWorldMgr:Login(mRecord, mConn, mRole)
     end
 end
 
+-- 检查玩家是否处于跨服状态：有跨服对象走 LoginKS，否则走常规 _Login
+-- @param mRecord  table  skynet 消息来源信息
+-- @param mConn    table  socket 连接信息
+-- @param mRole    table  角色登录数据
 function CWorldMgr:Login2(mRecord, mConn, mRole)
     local iPid = mRole.pid
+    -- oKuaFu: CKuaFuObj | nil，存在时说明玩家上次在跨服服务器
     local oKuaFu = global.oKuaFuMgr:GetKuaFuObj(iPid)
     if oKuaFu then
         self:LoginKS(mRecord, mConn, mRole)
@@ -428,14 +437,20 @@ function CWorldMgr:Login3(mRecord, mConn, mRole)
     self:_Login(mRecord, mConn, mRole)
 end
 
+-- 核心登录逻辑：接管 socket，区分重复登录（断线重连）与首次登录两条路径
+-- @param mRecord  table  skynet 消息来源信息
+-- @param mConn    table  {handle:int, gate:int, ip:string, port:int}
+-- @param mRole    table  {pid:int, role_token:string, now_server:string, forcelogin:int, ...}
 function CWorldMgr:_Login(mRecord, mConn, mRole)
     local pid = mRole.pid
+    -- 防止同一 pid 在异步加载过程中重复触发登录
     if self.m_mLoginPlayers[pid] then
         interactive.Send(mRecord.source, "login", "LoginResult", {pid = pid, handle = mConn.handle, token = mRole.role_token, errcode = gamedefines.ERRCODE.in_login})
         return
     end
 
     global.oScoreCache:AddExclude(pid)
+    -- oPlayer: CPlayer | nil，已在线则走重登（断线重连）逻辑，否则走首次登录
     local oPlayer = self.m_mOnlinePlayers[pid]
     if oPlayer then
         local oOldConn = oPlayer:GetConn()
@@ -444,23 +459,28 @@ function CWorldMgr:_Login(mRecord, mConn, mRole)
             self:KickConnection(oOldConn.m_iHandle)
         end
 
+        -- 接管 socket：重建 CConnection，world 服务接管消息转发
         local oConnection = connectionobj.NewConnection(mConn, pid)
         self.m_mConnections[mConn.handle] = oConnection
         oConnection:Forward()
 
+        -- 断线重连：复用已有 oPlayer，更新连接信息后直接触发 OnLogin
         oPlayer:ReInitRoleInfo(mConn, mRole)
-        oPlayer:OnLogin(true)
+        oPlayer:OnLogin(true)   -- bReEnter = true
         interactive.Send(mRecord.source, "login", "LoginResult", {pid = pid, handle = mConn.handle, token = mRole.role_token, errcode = gamedefines.ERRCODE.ok})
         return
     else
+        -- 首次登录：创建 CPlayer，暂放 m_mLoginPlayers（加载中），加载完成后移入 m_mOnlinePlayers
         local oPlayer = self:CreatePlayer(mConn, mRole)
         self.m_mLoginPlayers[oPlayer:GetPid()] = oPlayer
         self:SetServerKey(pid, mRole.now_server)
 
+        -- 接管 socket
         local oConnection = connectionobj.NewConnection(mConn, pid)
         self.m_mConnections[mConn.handle] = oConnection
         oConnection:Forward()
 
+        -- 第一步异步 DB 请求：获取 player 基础信息（pid/account/ban_time 等）
         local mInfo = {
             module = "playerdb",
             cmd = "GetPlayer",
@@ -475,6 +495,9 @@ function CWorldMgr:_Login(mRecord, mConn, mRole)
     end
 end
 
+-- 第一步 DB 回调：校验玩家记录存在后，发起第二步加载 (LoadPlayerMain)
+-- @param mRecord  table  skynet 消息来源信息
+-- @param mData    table  {pid:int, data:table|nil}  data 为 GetPlayer 查询结果
 function CWorldMgr:_LoginRole1(mRecord, mData)
     local pid = mData.pid
     local m = mData.data
@@ -484,12 +507,14 @@ function CWorldMgr:_LoginRole1(mRecord, mData)
     end
 
     if not m then
+        -- 玩家 DB 记录不存在（属于异常），通知 login 服务并中断登录
         self.m_mLoginPlayers[pid] = nil
         local iHandle = oPlayer:GetNetHandle()
         interactive.Send(".login", "login", "LoginResult", {pid = pid, handle = iHandle, token = oPlayer:GetRoleToken(), errcode = gamedefines.ERRCODE.not_exist_player})
         return
     end
 
+    -- 第二步异步 DB 请求：加载角色主数据（name / now_server 等）
     local mInfo = {
         module = "playerdb",
         cmd = "LoadPlayerMain",
@@ -502,6 +527,9 @@ function CWorldMgr:_LoginRole1(mRecord, mData)
     end)
 end
 
+-- 第二步 DB 回调：将主数据写入 oPlayer，启动模块逐一加载流程
+-- @param mRecord  table  skynet 消息来源信息
+-- @param mData    table  {pid:int, data:table}  data 为 LoadPlayerMain 返回的主记录
 function CWorldMgr:_LoginRole2(mRecord, mData)
     local pid = mData.pid
     local m = mData.data
@@ -509,8 +537,8 @@ function CWorldMgr:_LoginRole2(mRecord, mData)
     if not oPlayer then
         return
     end
-    oPlayer:Load(m)
-    self:_LoginLoadModule(pid)
+    oPlayer:Load(m)             -- 将基础字段写入 CPlayer 对象
+    self:_LoginLoadModule(pid)  -- 顺序加载 24 个业务模块数据
 end
 
 function CWorldMgr:OnLoginFail(pid)
@@ -552,9 +580,14 @@ local lLoginLoadInfo = {
     {"LoadPlayerMarryInfo", "m_oMarryCtrl"},
 }
 
+-- 按序加载 lLoginLoadInfo 中的业务模块数据（顺序执行，每个模块 DB 回调后才加载下一个）
+-- 全部 24 个模块加载完成后调用 _LoginLoadOfflines
+-- @param pid  int   玩家 pid
+-- @param idx  int?  当前加载到第几个模块（默认 1）
 function CWorldMgr:_LoginLoadModule(pid, idx)
     idx = idx or 1
     if idx > #lLoginLoadInfo then
+        -- 所有模块数据加载完毕，进入离线关联数据加载阶段
         self:_LoginLoadOfflines(pid)
         return
     end
@@ -565,9 +598,9 @@ function CWorldMgr:_LoginLoadModule(pid, idx)
         cond = {pid = pid},
     }
     gamedb.LoadGameDb(self:GetServerKey(pid), pid, "common", "DbOperate", mInfo, function (mRecord, mData)
-        self:_LoginLoadModuleCB(rFunc, mRecord, mData)
+        self:_LoginLoadModuleCB(rFunc, mRecord, mData)  -- 将数据写入对应子控制器
         if not is_release(self) then
-            self:_LoginLoadModule(pid, idx+1)
+            self:_LoginLoadModule(pid, idx+1)           -- 递归加载下一个模块
         end
     end)
 end
@@ -590,13 +623,17 @@ function CWorldMgr:_LoginLoadModuleCB(rFunc, mRecord, mData)
     end
 end
 
+-- 并发加载 8 个离线关联数据（Profile/Friend/MailBox 等），全部完成后触发 LoadEnd
+-- @param pid  int  玩家 pid
 function CWorldMgr:_LoginLoadOfflines(pid)
     local mFunc = {"LoadProfile","LoadFriend","LoadMailBox","LoadJJC","LoadChallenge","LoadWanfaCtrl", "LoadPrivacy", "LoadFeedBack"}
+    -- mLoad: {funcName:1, ...} 用于计数，达到 #mFunc 时说明所有离线数据已加载完毕
     local mLoad = {}
     for _,sFunc in pairs(mFunc) do
         if self[sFunc] then
             self[sFunc](self,pid,function(o)
                 mLoad[sFunc] = 1
+                -- 每个回调都检查是否全部完成
                 if table_count(mLoad) >= #mFunc then
                     self:LoadEnd(pid)
                 end
@@ -605,19 +642,24 @@ function CWorldMgr:_LoginLoadOfflines(pid)
     end
 end
 
+-- 所有数据加载完成后的收尾：将玩家从登录中状态移入在线，触发 OnLogin 并通知 login 服务
+-- @param pid  int  玩家 pid
 function CWorldMgr:LoadEnd(pid)
+    -- oPlayer: CPlayer，此时全部 DB 数据已写入
     local oPlayer = self.m_mLoginPlayers[pid]
     if not oPlayer then
         return
     end
+    -- 将玩家从"登录中"迁移到"在线"
     self.m_mLoginPlayers[pid] = nil
     self.m_mOnlinePlayers[pid] = oPlayer
     local iShowId = oPlayer:GetShowId()
     self:SetPlayerByShowId(iShowId, oPlayer)
-    oPlayer:OnLoaded()
+    oPlayer:OnLoaded()          -- 通知各子控制器数据已加载完毕
 
     self:CalOnlineCount(oPlayer)
-    oPlayer:OnLogin(false)
+    oPlayer:OnLogin(false)      -- bReEnter=false，首次进入游戏世界，触发进入场景等逻辑
+    -- 通知 login 服务登录成功（GS2CLoginRole 已在 OnLogin 内发出）
     interactive.Send(".login", "login", "LoginResult", {pid = pid, handle = oPlayer:GetNetHandle(), token = oPlayer:GetRoleToken(), errcode = gamedefines.ERRCODE.ok})
 
     self:GetShowIdByPid(pid)
